@@ -20,10 +20,6 @@
 
   <repositories>
     <repository>
-      <id>tyrannyofheaven.org</id>
-      <url>http://maven.tyrannyofheaven.org</url>
-    </repository>
-    <repository>
       <id>mvn-everything</id>
       <url>https://mvnrepository.com/artifact/</url>
     </repository>
@@ -43,9 +39,11 @@
   </repositories>
   <dependencies>
     <dependency>
-      <groupId>org.tyrannyofheaven.bukkit</groupId>
+      <groupId>ToHPluginUtils</groupId>
       <artifactId>ToHPluginUtils</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.0</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/jars/ToHPluginUtils.jar</systemPath>
     </dependency>
     <dependency>
       <groupId>com.sk89q</groupId>
