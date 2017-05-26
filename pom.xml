@@ -51,7 +51,7 @@
 			<artifactId>FactoidAPI</artifactId>
 			<version>1.0</version>
 			<scope>system</scope>
-			<systemPath>${project.basedir}/jars/FactoidAPI.jar</systemPath>
+			<systemPath>${project.basedir}/jars/Factoid.jar</systemPath>
 		</dependency>
 		<dependency>
         <groupId>com.sk89q</groupId>
