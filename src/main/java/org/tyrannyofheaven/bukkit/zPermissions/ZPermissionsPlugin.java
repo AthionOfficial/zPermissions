@@ -94,7 +94,6 @@ import org.tyrannyofheaven.bukkit.zPermissions.model.UuidDisplayNameCache;
 import org.tyrannyofheaven.bukkit.zPermissions.region.FactionsRegionStrategy;
 import org.tyrannyofheaven.bukkit.zPermissions.region.FactoidRegionStrategy;
 import org.tyrannyofheaven.bukkit.zPermissions.region.RegionStrategy;
-import org.tyrannyofheaven.bukkit.zPermissions.region.ResidenceRegionStrategy;
 import org.tyrannyofheaven.bukkit.zPermissions.region.WorldGuardRegionStrategy;
 import org.tyrannyofheaven.bukkit.zPermissions.service.DefaultPlayerPrefixHandler;
 import org.tyrannyofheaven.bukkit.zPermissions.service.PlayerPrefixHandler;
@@ -679,8 +678,6 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
         strategies.put(regionStrategy.getName(), regionStrategy);
 
         // Additional region managers are registered here.
-        regionStrategy = new ResidenceRegionStrategy(this, getZPermissionsCore());
-        strategies.put(regionStrategy.getName(), regionStrategy);
         
         regionStrategy = new FactionsRegionStrategy(this, getZPermissionsCore());
         strategies.put(regionStrategy.getName(), regionStrategy);
