@@ -36,11 +36,6 @@
 			<id>turt2live-repo</id>
 			<url>http://repo.turt2live.com/</url>
 		</repository>
-		<repository>
-			<id>Tabinol.me Artifactory</id>
-			<name>Tabinol.me Artifactory-releases</name>
-			<url>http://artifactory.tabinol.me/artifactory/public</url>
-		</repository>
 	</repositories>
 
 	<dependencies>
@@ -110,11 +105,6 @@
 			<groupId>com.massivecraft</groupId>
 			<artifactId>MassiveCore</artifactId>
 			<version>7.4.0</version>
-		</dependency>
-		<dependency>
-			<groupId>me.tabinol.factoid</groupId>
-			<artifactId>Factoid</artifactId>
-			<version>0.3</version>
 		</dependency>
 		<dependency>
 			<groupId>net.milkbowl.vault</groupId>
