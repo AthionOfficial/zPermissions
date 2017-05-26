@@ -52,6 +52,13 @@
 			<systemPath>${project.basedir}/jars/ToHPluginUtils.jar</systemPath>
 		</dependency>
 		<dependency>
+			<groupId>FactoidAPI</groupId>
+			<artifactId>FactoidAPI</artifactId>
+			<version>1.0</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/jars/FactoidAPI.jar</systemPath>
+		</dependency>
+		<dependency>
         <groupId>com.sk89q</groupId>
         <artifactId>worldguard</artifactId>
 			<version>6.1</version>
