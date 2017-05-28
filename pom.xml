@@ -270,7 +270,7 @@
 								<configuration>
 									<artifactSet>
 										<includes>
-											<include>org.tyrannyofheaven.bukkit:ToHPluginUtils</include>
+											<include>ToHPluginUtils:ToHPluginUtils</include>
 										</includes>
 									</artifactSet>
 									<relocations>
