@@ -226,7 +226,13 @@
 						</goals>
 						<configuration>
 							<shadedArtifactAttached>true</shadedArtifactAttached>
-							<shadedClassifierName>eBeans</shadedClassifierName> <!-- Any name that makes sense -->
+							<shadedClassifierName>shaded</shadedClassifierName> <!-- Any name that makes sense -->
+							<artifactSet>
+								<includes>
+									<include>org.avaje:ebean</include>
+									<include>com.google.guava:guava</include>
+								</includes>
+							</artifactSet>
 						</configuration>
 					</execution>
 				</executions>
