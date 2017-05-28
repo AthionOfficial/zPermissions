@@ -52,6 +52,7 @@ import org.yaml.snakeyaml.Dumper;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Loader;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.BaseConstructor;
 import org.yaml.snakeyaml.resolver.Resolver;
 
 /**
@@ -198,7 +199,7 @@ public class FilePermissionDao implements PermissionDao {
 		options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
 		Dumper yamlDumper = new Dumper(options);
 
-		Yaml yaml = new Yaml(new Loader(), yamlDumper, new Resolver());
+		Yaml yaml = new Yaml(new BaseConstructor(), yamlDumper, new Resolver());
 
 
 		Writer out = new FileWriter(newFile);
@@ -243,7 +244,7 @@ public class FilePermissionDao implements PermissionDao {
 	 */
 	@SuppressWarnings("unchecked")
 	public void load(File file) throws IOException {
-		Yaml yaml = new Yaml(new Loader());
+		Yaml yaml = new Yaml(new BaseConstructor());
 		Reader in = new FileReader(file);
 		Map<String, Object> input = null;
 		try {

@@ -11,6 +11,7 @@ import org.yaml.snakeyaml.Dumper;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Loader;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.BaseConstructor;
 import org.yaml.snakeyaml.representer.Representer;
 import org.yaml.snakeyaml.resolver.Resolver;
 
@@ -30,7 +31,7 @@ public class AnnotatedYamlConfiguration extends YamlConfiguration {
 
 	private final Representer yamlRepresenter = new YamlRepresenter();
 
-	private final Yaml yaml = new Yaml(new Loader(), yamlDumper, new Resolver());
+	private final Yaml yaml = new Yaml(new BaseConstructor(), yamlDumper, new Resolver());
 
 	// Map from property key to comment. Comment may have multiple lines that are newline-separated.
 	private final Map<String, String> comments = new HashMap<String, String>();
