@@ -98,7 +98,7 @@ public class ToHDatabaseUtils {
             ds.setUrl(node.getString("url"));
             ds.setUsername(node.getString("username"));
             ds.setPassword(node.getString("password"));
-            ds.setIsolationLevel(TransactionIsolation.getLevel(node.getString("isolation")));
+//            ds.setIsolationLevel(TransactionIsolation.getLevel(node.getString("isolation")));
 
             if (ds.getDriver().contains("sqlite")) {
                 db.setDatabasePlatform(new SQLitePlatform());
