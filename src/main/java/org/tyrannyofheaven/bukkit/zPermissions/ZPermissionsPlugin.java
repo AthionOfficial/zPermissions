@@ -122,7 +122,7 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
 
 	public static ZPermissionsPlugin plugin;
 	
-	public static Server pluginServer
+	public static Server pluginServer;
 
     // Name of the default group, in absence of a config file
     private static final String DEFAULT_GROUP = "default";
