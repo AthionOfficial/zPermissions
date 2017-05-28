@@ -12,46 +12,42 @@ package org.tyrannyofheaven.bukkit.util;
  */
 public class VersionInfo {
 
-    private final String artifactId;
+	private final String artifactId;
 
-    private final String version;
+	private final String version;
 
-    private final String build;
+	private final String build;
 
-    private final String versionString;
+	private final String versionString;
 
-    private final String fullVersion;
+	private final String fullVersion;
 
-    public VersionInfo(String artifactId, String version, String build) {
-        this.artifactId = artifactId;
-        this.version = version;
-        this.build = build;
+	public VersionInfo(String artifactId, String version, String build) {
+		this.artifactId = artifactId;
+		this.version = version;
+		this.build = build;
+		versionString = version;
+		fullVersion = String.format("%s %s", artifactId, versionString);
+	}
 
-        if (version.contains("SNAPSHOT"))
-            versionString = String.format("%s (build: %s)", version, build);
-        else
-            versionString = version;
-        fullVersion = String.format("%s %s", artifactId, versionString);
-    }
+	public String getArtifactId() {
+		return artifactId;
+	}
 
-    public String getArtifactId() {
-        return artifactId;
-    }
+	public String getVersion() {
+		return version;
+	}
 
-    public String getVersion() {
-        return version;
-    }
+	public String getBuild() {
+		return build;
+	}
 
-    public String getBuild() {
-        return build;
-    }
+	public String getVersionString() {
+		return versionString;
+	}
 
-    public String getVersionString() {
-        return versionString;
-    }
-
-    public String getFullVersion() {
-        return fullVersion;
-    }
+	public String getFullVersion() {
+		return fullVersion;
+	}
 
 }
