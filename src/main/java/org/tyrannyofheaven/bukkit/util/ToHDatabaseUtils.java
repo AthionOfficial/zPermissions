@@ -90,7 +90,8 @@ public class ToHDatabaseUtils {
         ConfigurationSection node = config != null ? config.getConfigurationSection("database") : null;
         if (node == null) {
             // Let Bukkit configure
-            ZPermissionsPlugin.getPluginServer().configureDbConfig(db);
+        	EbeanServerFactory.create(db);
+//            ZPermissionsPlugin.getPluginServer().configureDbConfig(db);
         }
         else {
             DataSourceConfig ds = new DataSourceConfig();
