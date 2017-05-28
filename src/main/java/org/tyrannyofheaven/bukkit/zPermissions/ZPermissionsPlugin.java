@@ -121,6 +121,8 @@ import com.avaje.ebeaninternal.api.SpiEbeanServer;
 public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, ZPermissionsConfig, CommandExceptionHandler {
 
 	public static ZPermissionsPlugin plugin;
+	
+	public static Server pluginServer
 
     // Name of the default group, in absence of a config file
     private static final String DEFAULT_GROUP = "default";
@@ -474,6 +476,8 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
     public void onEnable() {
 		
 		this.plugin = plugin;
+		
+		this.pluginServer = plugin.getServer();
 		
         try {
             log(this, "%s starting...", versionInfo.getVersionString());
@@ -1515,7 +1519,7 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
     }
 	
 	public static Server getPluginServer(){
-		return this.plugin.getServer();
+		return this.pluginServer;
 	}
 
 }
