@@ -21,6 +21,10 @@
 
 	<repositories>
 		<repository>
+			<id>snakeyaml</id>
+			<url>https://mvnrepository.com/artifact/org.yaml/snakeyaml</url>
+		</repository>
+		<repository>
 			<id>spigot-repo</id>
 			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
 		</repository>
@@ -140,6 +144,11 @@
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>22.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.yaml</groupId>
+			<artifactId>snakeyaml</artifactId>
+			<version>1.5</version>
 		</dependency>
 	</dependencies>
 
