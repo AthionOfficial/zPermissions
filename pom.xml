@@ -253,7 +253,7 @@
 				<buildNumber>unknown</buildNumber>
 			</properties>
 		</profile>
-<!-- 		<profile>
+		<profile>
 			<id>standalone</id>
 			<build>
 				<plugins>
@@ -283,7 +283,7 @@
 							</execution>
 						</executions>
 					</plugin>
-					#<plugin> <groupId>com.github.wvengen</groupId> <artifactId>proguard-maven-plugin</artifactId> 
+					<!-- <plugin> <groupId>com.github.wvengen</groupId> <artifactId>proguard-maven-plugin</artifactId> 
 						<version>2.0.5</version> <executions> <execution> <phase>package</phase> 
 						<goals> <goal>proguard</goal> </goals> </execution> </executions> <configuration> 
 						<options> <option>-dontobfuscate</option> <option>-keepattributes SourceFile,LineNumberTable</option> 
@@ -292,9 +292,9 @@
 						*; }</option> <option>-keep public class * extends org.bukkit.plugin.java.JavaPlugin</option> 
 						</options> <libs> <lib>${java.home}/../Classes/classes.jar</lib> </libs> 
 						<exclusions> <exclusion> <groupId>org.tyrannyofheaven.bukkit</groupId> <artifactId>ToHPluginUtils</artifactId> 
-						</exclusion> </exclusions> </configuration> </plugin>#
+						</exclusion> </exclusions> </configuration> </plugin> -->
 				</plugins>
 			</build>
-		</profile> -->
+		</profile>
 	</profiles>
 </project>
