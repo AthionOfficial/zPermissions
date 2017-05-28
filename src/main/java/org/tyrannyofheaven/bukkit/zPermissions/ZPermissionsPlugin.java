@@ -119,8 +119,6 @@ import com.avaje.ebeaninternal.api.SpiEbeanServer;
  * @author zerothangel
  */
 public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, ZPermissionsConfig, CommandExceptionHandler {
-
-	public static ZPermissionsPlugin plugin;
 	
 	public static Server pluginServer;
 
@@ -475,9 +473,7 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
     @Override
     public void onEnable() {
 		
-		this.plugin = plugin;
-		
-		this.pluginServer = plugin.getServer();
+		ZPermissionsPlugin.pluginServer = this.getServer();
 		
         try {
             log(this, "%s starting...", versionInfo.getVersionString());
