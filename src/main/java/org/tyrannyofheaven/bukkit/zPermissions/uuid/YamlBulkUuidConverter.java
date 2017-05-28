@@ -39,10 +39,7 @@ import org.tyrannyofheaven.bukkit.util.uuid.UuidDisplayName;
 import org.tyrannyofheaven.bukkit.util.uuid.UuidResolver;
 import org.yaml.snakeyaml.Dumper;
 import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Loader;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.BaseConstructor;
-import org.yaml.snakeyaml.resolver.Resolver;
 
 public class YamlBulkUuidConverter implements BulkUuidConverter {
 
@@ -69,7 +66,7 @@ public class YamlBulkUuidConverter implements BulkUuidConverter {
 		if (!dataFile.exists()) return;
 
 		// Read it in
-		Yaml yaml = new Yaml(new BaseConstructor());
+		Yaml yaml = new Yaml();
 		Reader in = new FileReader(dataFile);
 		Map<String, Object> data = null;
 		try {
@@ -110,7 +107,7 @@ public class YamlBulkUuidConverter implements BulkUuidConverter {
 		options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
 		Dumper yamlDumper = new Dumper(options);
 
-		yaml = new Yaml(new BaseConstructor(), yamlDumper, new Resolver());
+		yaml = new Yaml(yamlDumper);
 
 		Writer out = new FileWriter(newFile);
 		try {
