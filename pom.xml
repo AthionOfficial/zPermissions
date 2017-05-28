@@ -25,6 +25,10 @@
 			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
 		</repository>
 		<repository>
+			<id>guava</id>
+			<url>https://mvnrepository.com/artifact/com.google.guava/guava</url>
+		</repository>
+		<repository>
 			<id>mvn-everything</id>
 			<url>https://mvnrepository.com/artifact/</url>
 		</repository>
@@ -76,8 +80,8 @@
 			<systemPath>${project.basedir}/jars/Factoid.jar</systemPath>
 		</dependency>
 		<dependency>
-        <groupId>com.sk89q</groupId>
-        <artifactId>worldguard</artifactId>
+			<groupId>com.sk89q</groupId>
+			<artifactId>worldguard</artifactId>
 			<version>6.1</version>
 			<exclusions>
 				<exclusion>
@@ -149,6 +153,11 @@
 			<groupId>org.avaje</groupId>
 			<artifactId>ebean</artifactId>
 			<version>2.7.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>22.0</version>
 		</dependency>
 	</dependencies>
 
@@ -253,48 +262,23 @@
 				<buildNumber>unknown</buildNumber>
 			</properties>
 		</profile>
-<!-- 		<profile>
-			<id>standalone</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-shade-plugin</artifactId>
-						<version>1.5</version>
-						<executions>
-							<execution>
-								<phase>package</phase>
-								<goals>
-									<goal>shade</goal>
-								</goals>
-								<configuration>
-									<artifactSet>
-										<includes>
-											<include>ToHPluginUtils:ToHPluginUtils</include>
-										</includes>
-									</artifactSet>
-									<relocations>
-										<relocation>
-											<pattern>org.tyrannyofheaven.bukkit.util</pattern>
-											<shadedPattern>org.tyrannyofheaven.bukkit.zPermissions.util</shadedPattern>
-										</relocation>
-									</relocations>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					#<plugin> <groupId>com.github.wvengen</groupId> <artifactId>proguard-maven-plugin</artifactId> 
-						<version>2.0.5</version> <executions> <execution> <phase>package</phase> 
-						<goals> <goal>proguard</goal> </goals> </execution> </executions> <configuration> 
-						<options> <option>-dontobfuscate</option> <option>-keepattributes SourceFile,LineNumberTable</option> 
-						<option>-keepattributes Signature,*Annotation*</option> <option>-keep @javax.persistence.Entity 
-						class * { *; }</option> <option>-keepclassmembers class * { @org.tyrannyofheaven.bukkit.util.command.Command 
-						*; }</option> <option>-keep public class * extends org.bukkit.plugin.java.JavaPlugin</option> 
-						</options> <libs> <lib>${java.home}/../Classes/classes.jar</lib> </libs> 
-						<exclusions> <exclusion> <groupId>org.tyrannyofheaven.bukkit</groupId> <artifactId>ToHPluginUtils</artifactId> 
-						</exclusion> </exclusions> </configuration> </plugin>#
-				</plugins>
-			</build>
-		</profile> -->
+		<!-- <profile> <id>standalone</id> <build> <plugins> <plugin> <groupId>org.apache.maven.plugins</groupId> 
+			<artifactId>maven-shade-plugin</artifactId> <version>1.5</version> <executions> 
+			<execution> <phase>package</phase> <goals> <goal>shade</goal> </goals> <configuration> 
+			<artifactSet> <includes> <include>ToHPluginUtils:ToHPluginUtils</include> 
+			</includes> </artifactSet> <relocations> <relocation> <pattern>org.tyrannyofheaven.bukkit.util</pattern> 
+			<shadedPattern>org.tyrannyofheaven.bukkit.zPermissions.util</shadedPattern> 
+			</relocation> </relocations> </configuration> </execution> </executions> 
+			</plugin> #<plugin> <groupId>com.github.wvengen</groupId> <artifactId>proguard-maven-plugin</artifactId> 
+			<version>2.0.5</version> <executions> <execution> <phase>package</phase> 
+			<goals> <goal>proguard</goal> </goals> </execution> </executions> <configuration> 
+			<options> <option>-dontobfuscate</option> <option>-keepattributes SourceFile,LineNumberTable</option> 
+			<option>-keepattributes Signature,*Annotation*</option> <option>-keep @javax.persistence.Entity 
+			class * { *; }</option> <option>-keepclassmembers class * { @org.tyrannyofheaven.bukkit.util.command.Command 
+			*; }</option> <option>-keep public class * extends org.bukkit.plugin.java.JavaPlugin</option> 
+			</options> <libs> <lib>${java.home}/../Classes/classes.jar</lib> </libs> 
+			<exclusions> <exclusion> <groupId>org.tyrannyofheaven.bukkit</groupId> <artifactId>ToHPluginUtils</artifactId> 
+			</exclusion> </exclusions> </configuration> </plugin># </plugins> </build> 
+			</profile> -->
 	</profiles>
 </project>
