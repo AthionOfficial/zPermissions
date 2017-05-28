@@ -40,24 +40,24 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Command {
 
-    /**
-     * The name of the command along with any associated aliases.
-     */
-    public String[] value();
+	/**
+	 * The name of the command along with any associated aliases.
+	 */
+	public String[] value();
 
-    /**
-     * Command description to be displayed when showing help.
-     */
-    public String description() default "";
+	/**
+	 * Command description to be displayed when showing help.
+	 */
+	public String description() default "";
 
-    /**
-     * Description of the varargs (String[]) parameter when showing help.
-     */
-    public String varargs() default "";
+	/**
+	 * Description of the varargs (String[]) parameter when showing help.
+	 */
+	public String varargs() default "";
 
-    /**
-     * TypeCompleter to use for varargs. Also see {@link ToHCommandExecutor#registerTypeCompleter(String, TypeCompleter)}.
-     */
-    public String completer() default "";
+	/**
+	 * TypeCompleter to use for varargs. Also see {@link ToHCommandExecutor#registerTypeCompleter(String, TypeCompleter)}.
+	 */
+	public String completer() default "";
 
 }

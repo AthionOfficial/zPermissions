@@ -140,8 +140,11 @@ public class ToHFileUtils {
                 throw e;
             // Otherwise, ignore...
         }
-        catch (IOException | InvalidConfigurationException e) {
+        catch (InvalidConfigurationException e) {
             ToHLoggingUtils.error(plugin, "Error reading configuration %s", configFile, e);
+        }
+        catch (IOException  e){
+        	ToHLoggingUtils.error(plugin, "Error reading configuration %s", configFile, e);
         }
 
         // Set defaults if present
@@ -164,7 +167,7 @@ public class ToHFileUtils {
             if (commentsInput != null) {
                 try (Reader reader = new InputStreamReader(commentsInput, Charsets.UTF_8)) {
                     Configuration comments = YamlConfiguration.loadConfiguration(reader);
-                    Map<String, String> commentsMap = new HashMap<>();
+                    Map<String, String> commentsMap = new HashMap<String, String>();
                     for (Map.Entry<String, Object> entry : comments.getValues(false).entrySet()) {
                         commentsMap.put(entry.getKey(), entry.getValue().toString());
                     }

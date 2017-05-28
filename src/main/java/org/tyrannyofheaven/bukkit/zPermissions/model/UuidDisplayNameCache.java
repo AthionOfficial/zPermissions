@@ -34,58 +34,58 @@ import org.tyrannyofheaven.bukkit.util.uuid.UuidUtils;
 @Table(name="uuidcache")
 public class UuidDisplayNameCache {
 
-    private String name;
-    
-    private String displayName;
+	private String name;
 
-    private String uuidString;
-    
-    private Date timestamp;
+	private String displayName;
 
-    @Id
-    public String getName() {
-        return name;
-    }
+	private String uuidString;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	private Date timestamp;
 
-    @Column(nullable=false)
-    public String getDisplayName() {
-        return displayName;
-    }
+	@Id
+	public String getName() {
+		return name;
+	}
 
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    @Column(name="uuid", nullable=false)
-    public String getUuidString() {
-        return uuidString;
-    }
+	@Column(nullable=false)
+	public String getDisplayName() {
+		return displayName;
+	}
 
-    public void setUuidString(String uuid) {
-        this.uuidString = uuid;
-    }
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
 
-    @Column(nullable=false)
-    @Temporal(TemporalType.TIMESTAMP)
-    public Date getTimestamp() {
-        return timestamp;
-    }
+	@Column(name="uuid", nullable=false)
+	public String getUuidString() {
+		return uuidString;
+	}
 
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
-    }
+	public void setUuidString(String uuid) {
+		this.uuidString = uuid;
+	}
 
-    @Transient
-    public UUID getUuid() {
-        return uncanonicalizeUuid(getUuidString());
-    }
+	@Column(nullable=false)
+	@Temporal(TemporalType.TIMESTAMP)
+	public Date getTimestamp() {
+		return timestamp;
+	}
 
-    public void setUuid(UUID uuid) {
-        setUuidString(UuidUtils.canonicalizeUuid(uuid));
-    }
+	public void setTimestamp(Date timestamp) {
+		this.timestamp = timestamp;
+	}
+
+	@Transient
+	public UUID getUuid() {
+		return uncanonicalizeUuid(getUuidString());
+	}
+
+	public void setUuid(UUID uuid) {
+		setUuidString(UuidUtils.canonicalizeUuid(uuid));
+	}
 
 }

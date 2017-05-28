@@ -30,43 +30,43 @@ import javax.persistence.UniqueConstraint;
 @UniqueConstraint(columnNames="name")
 public class PermissionWorld {
 
-    private Long id;
-    
-    private String name;
+	private Long id;
 
-    @Id
-    public Long getId() {
-        return id;
-    }
+	private String name;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	@Id
+	public Long getId() {
+		return id;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (!(obj instanceof PermissionWorld)) return false;
-        PermissionWorld o = (PermissionWorld)obj;
-        return getName() == null ? o.getName() == null : getName().equals(o.getName());
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    @Override
-    public int hashCode() {
-        return getName() == null ? 0 : getName().hashCode();
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) return true;
+		if (!(obj instanceof PermissionWorld)) return false;
+		PermissionWorld o = (PermissionWorld)obj;
+		return getName() == null ? o.getName() == null : getName().equals(o.getName());
+	}
 
-    @Override
-    public String toString() {
-        return String.format("World[%s]", getName());
-    }
+	@Override
+	public int hashCode() {
+		return getName() == null ? 0 : getName().hashCode();
+	}
+
+	@Override
+	public String toString() {
+		return String.format("World[%s]", getName());
+	}
 
 }

@@ -36,60 +36,60 @@ import org.bukkit.event.player.PlayerEvent;
  */
 public class ZPermissionsPlayerUpdateEvent extends PlayerEvent {
 
-    private final Cause cause;
+	private final Cause cause;
 
-    /**
-     * Creates a player permissions change event.
-     * 
-     * @param who the affected player
-     * @param cause the cause of this permissions change
-     */
-    public ZPermissionsPlayerUpdateEvent(Player who, Cause cause) {
-        super(who);
-        if (cause == null)
-            throw new IllegalArgumentException("cause cannot be null");
-        this.cause = cause;
-    }
+	/**
+	 * Creates a player permissions change event.
+	 * 
+	 * @param who the affected player
+	 * @param cause the cause of this permissions change
+	 */
+	public ZPermissionsPlayerUpdateEvent(Player who, Cause cause) {
+		super(who);
+		if (cause == null)
+			throw new IllegalArgumentException("cause cannot be null");
+		this.cause = cause;
+	}
 
-    /**
-     * Returns the cause of this permissions change.
-     * 
-     * @return the cause of this permissions change
-     */
-    public Cause getCause() {
-        return cause;
-    }
+	/**
+	 * Returns the cause of this permissions change.
+	 * 
+	 * @return the cause of this permissions change
+	 */
+	public Cause getCause() {
+		return cause;
+	}
 
-    private static final HandlerList handlers = new HandlerList();
+	private static final HandlerList handlers = new HandlerList();
 
-    public HandlerList getHandlers() {
-        return handlers;
-    }
+	public HandlerList getHandlers() {
+		return handlers;
+	}
 
-    public static HandlerList getHandlerList() {
-        return handlers;
-    }
+	public static HandlerList getHandlerList() {
+		return handlers;
+	}
 
-    public static enum Cause {
-        /**
-         * Permissions change to the player caused by a command. Includes changes
-         * through the API. Note that the settemp command cannot be covered since
-         * there's no visibility as to when the permission goes away.
-         */
-        COMMAND,
-        
-        /**
-         * An associated group was changed. Includes command line, changes
-         * through the API, group membership expirations, and server-wide changes
-         * (reload, refresh, etc. since these force a re-read from storage).
-         */
-        GROUP_CHANGE,
+	public static enum Cause {
+		/**
+		 * Permissions change to the player caused by a command. Includes changes
+		 * through the API. Note that the settemp command cannot be covered since
+		 * there's no visibility as to when the permission goes away.
+		 */
+		COMMAND,
 
-        /**
-         * Player movement, including movement within the same world (if
-         * region-support is enabled) and movement to a different world.
-         */
-        MOVEMENT;
-    }
+		/**
+		 * An associated group was changed. Includes command line, changes
+		 * through the API, group membership expirations, and server-wide changes
+		 * (reload, refresh, etc. since these force a re-read from storage).
+		 */
+		GROUP_CHANGE,
+
+		/**
+		 * Player movement, including movement within the same world (if
+		 * region-support is enabled) and movement to a different world.
+		 */
+		MOVEMENT;
+	}
 
 }

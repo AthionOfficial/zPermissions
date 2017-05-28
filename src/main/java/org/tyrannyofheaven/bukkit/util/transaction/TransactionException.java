@@ -22,21 +22,21 @@ package org.tyrannyofheaven.bukkit.util.transaction;
  */
 public class TransactionException extends RuntimeException {
 
-    private static final long serialVersionUID = -1958331767457262692L;
+	private static final long serialVersionUID = -1958331767457262692L;
 
-    public TransactionException() {
-    }
+	public TransactionException() {
+	}
 
-    public TransactionException(String message) {
-        super(message);
-    }
+	public TransactionException(String message) {
+		super(message);
+	}
 
-    public TransactionException(Throwable cause) {
-        super(cause);
-    }
+	public TransactionException(Throwable cause) {
+		super(cause);
+	}
 
-    public TransactionException(String message, Throwable cause) {
-        super(message, cause);
-    }
+	public TransactionException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
 }

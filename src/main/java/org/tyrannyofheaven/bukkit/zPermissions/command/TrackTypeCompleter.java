@@ -26,21 +26,20 @@ import org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsConfig;
 
 public class TrackTypeCompleter implements TypeCompleter {
 
-    private final ZPermissionsConfig config;
+	private final ZPermissionsConfig config;
 
-    public TrackTypeCompleter(ZPermissionsConfig config) {
-        this.config = config;
-    }
+	public TrackTypeCompleter(ZPermissionsConfig config) {
+		this.config = config;
+	}
 
-    @Override
-    public List<String> complete(Class<?> clazz, String arg, CommandSender sender, String partial) {
-        if (clazz == String.class) {
-            List<String> result = new ArrayList<>();
-            StringUtil.copyPartialMatches(partial, config.getTracks(), result);
-            // NB not sorted, left in definition order
-            return result;
-        }
-        return Collections.emptyList();
-    }
+	public List<String> complete(Class<?> clazz, String arg, CommandSender sender, String partial) {
+		if (clazz == String.class) {
+			List<String> result = new ArrayList<String>();
+			StringUtil.copyPartialMatches(partial, config.getTracks(), result);
+			// NB not sorted, left in definition order
+			return result;
+		}
+		return Collections.emptyList();
+	}
 
 }

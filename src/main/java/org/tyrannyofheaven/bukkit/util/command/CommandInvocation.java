@@ -22,31 +22,31 @@ package org.tyrannyofheaven.bukkit.util.command;
  */
 final class CommandInvocation {
 
-    private final String label;
-    
-    private final CommandMetaData commandMetaData;
+	private final String label;
 
-    CommandInvocation(String label, CommandMetaData commandMetaData) {
-        this.label = label;
-        this.commandMetaData = commandMetaData;
-    }
+	private final CommandMetaData commandMetaData;
 
-    /**
-     * Returns the name of the command. May be an alias.
-     * 
-     * @return the command label
-     */
-    public String getLabel() {
-        return label;
-    }
+	CommandInvocation(String label, CommandMetaData commandMetaData) {
+		this.label = label;
+		this.commandMetaData = commandMetaData;
+	}
 
-    /**
-     * Returns the associated CommandMetaData.
-     * 
-     * @return the CommandMetaData
-     */
-    public CommandMetaData getCommandMetaData() {
-        return commandMetaData;
-    }
+	/**
+	 * Returns the name of the command. May be an alias.
+	 * 
+	 * @return the command label
+	 */
+	public String getLabel() {
+		return label;
+	}
+
+	/**
+	 * Returns the associated CommandMetaData.
+	 * 
+	 * @return the CommandMetaData
+	 */
+	public CommandMetaData getCommandMetaData() {
+		return commandMetaData;
+	}
 
 }

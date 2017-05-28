@@ -22,16 +22,16 @@ package org.tyrannyofheaven.bukkit.zPermissions.dao;
  */
 public class MissingGroupException extends PermissionServiceException {
 
-    private static final long serialVersionUID = 1066889464517437579L;
+	private static final long serialVersionUID = 1066889464517437579L;
 
-    private final String groupName;
-    
-    public MissingGroupException(String groupName) {
-        this.groupName = groupName;
-    }
+	private final String groupName;
 
-    public String getGroupName() {
-        return groupName;
-    }
+	public MissingGroupException(String groupName) {
+		this.groupName = groupName;
+	}
+
+	public String getGroupName() {
+		return groupName;
+	}
 
 }

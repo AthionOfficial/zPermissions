@@ -98,20 +98,20 @@ public class ToHDatabaseUtils {
 			configFile = new File(plugin.getServer().getWorldContainer().getAbsolutePath(), "bukkit.yml");
 			configuration = YamlConfiguration.loadConfiguration(configFile);
 
-		    DataSourceConfig ds = new DataSourceConfig();
-		    ds.setDriver(configuration.getString("database.driver"));
-		    ds.setUrl(configuration.getString("database.url"));
-		    ds.setUsername(configuration.getString("database.username"));
-		    ds.setPassword(configuration.getString("database.password"));
-		    //ds.setIsolationLevel(TransactionIsolation.getLevel(configuration.getString("database.isolation")));
-		    
-		    if (ds.getDriver().contains("sqlite"))
-		    {
-		      db.setDatabasePlatform(new SQLitePlatform());
-		      db.getDatabasePlatform().getDbDdlSyntax().setIdentity("");
-		    }
-		    
-		    db.setDataSourceConfig(ds);
+			DataSourceConfig ds = new DataSourceConfig();
+			ds.setDriver(configuration.getString("database.driver"));
+			ds.setUrl(configuration.getString("database.url"));
+			ds.setUsername(configuration.getString("database.username"));
+			ds.setPassword(configuration.getString("database.password"));
+			//ds.setIsolationLevel(TransactionIsolation.getLevel(configuration.getString("database.isolation")));
+
+			if (ds.getDriver().contains("sqlite"))
+			{
+				db.setDatabasePlatform(new SQLitePlatform());
+				db.getDatabasePlatform().getDbDdlSyntax().setIdentity("");
+			}
+
+			db.setDataSourceConfig(ds);
 		}
 		else {
 			DataSourceConfig ds = new DataSourceConfig();
@@ -313,7 +313,7 @@ public class ToHDatabaseUtils {
 		// Horrible, horrible
 		DdlGenContext ctx = new DdlGenContext(spiEbeanServer.getDatabasePlatform(), namingConvention);
 		CreateTableVisitor create = new CreateTableVisitor(ctx);
-		List<BeanDescriptor<?>> descriptors = new ArrayList<>(1);
+		List<BeanDescriptor<?>> descriptors = new ArrayList<BeanDescriptor<?>>(1);
 		descriptors.add(spiEbeanServer.getBeanDescriptor(ToHSchemaVersion.class));
 		VisitorUtil.visit(descriptors, create);
 

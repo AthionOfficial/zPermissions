@@ -22,18 +22,18 @@ package org.tyrannyofheaven.bukkit.util.command;
  */
 public class UnknownFlagException extends ParseException {
 
-    private static final long serialVersionUID = -7316597479193239903L;
+	private static final long serialVersionUID = -7316597479193239903L;
 
-    private final String flag;
+	private final String flag;
 
-    UnknownFlagException(String flag) {
-        super("Unknown flag: " + flag);
-        
-        this.flag = flag;
-    }
+	UnknownFlagException(String flag) {
+		super("Unknown flag: " + flag);
 
-    public String getFlag() {
-        return flag;
-    }
+		this.flag = flag;
+	}
+
+	public String getFlag() {
+		return flag;
+	}
 
 }

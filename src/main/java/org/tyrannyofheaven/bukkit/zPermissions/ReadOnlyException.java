@@ -7,21 +7,21 @@ package org.tyrannyofheaven.bukkit.zPermissions;
  */
 public class ReadOnlyException extends RuntimeException {
 
-    private static final long serialVersionUID = -1190631455357421902L;
+	private static final long serialVersionUID = -1190631455357421902L;
 
-    public ReadOnlyException() {
-    }
+	public ReadOnlyException() {
+	}
 
-    public ReadOnlyException(String message, Throwable cause) {
-        super(message, cause);
-    }
+	public ReadOnlyException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-    public ReadOnlyException(String message) {
-        super(message);
-    }
+	public ReadOnlyException(String message) {
+		super(message);
+	}
 
-    public ReadOnlyException(Throwable cause) {
-        super(cause);
-    }
+	public ReadOnlyException(Throwable cause) {
+		super(cause);
+	}
 
 }

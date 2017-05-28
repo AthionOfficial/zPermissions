@@ -22,11 +22,11 @@ package org.tyrannyofheaven.bukkit.util.transaction;
  */
 public interface TransactionCallback<T> {
 
-    /**
-     * Perform operations within a transaction.
-     * @return the result of the operation
-     * @throws Exception any thrown exception will result in a rollback
-     */
-    public T doInTransaction() throws Exception;
+	/**
+	 * Perform operations within a transaction.
+	 * @return the result of the operation
+	 * @throws Exception any thrown exception will result in a rollback
+	 */
+	public T doInTransaction() throws Exception;
 
 }

@@ -27,62 +27,62 @@ import java.util.List;
  */
 public class PermissionException extends RuntimeException {
 
-    private static final long serialVersionUID = 4064063141792654633L;
+	private static final long serialVersionUID = 4064063141792654633L;
 
-    private final List<String> permissions;
-    
-    private final boolean all;
+	private final List<String> permissions;
 
-    private final boolean checkNegations;
+	private final boolean all;
 
-    /**
-     * Create a PermissionException for a single permission.
-     * 
-     * @param permission name of the permission
-     */
-    public PermissionException(String permission) {
-        this.permissions = Collections.singletonList(permission);
-        this.all = true;
-        this.checkNegations = false;
-    }
+	private final boolean checkNegations;
 
-    /**
-     * Create a PermissionException for multiple permissions.
-     *  
-     * @param all true if all permissions are required
-     * @param permissions name of permissions
-     */
-    public PermissionException(boolean all, boolean checkNegations, String... permissions) {
-        this.permissions = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(permissions)));
-        this.all = all;
-        this.checkNegations = checkNegations;
-    }
+	/**
+	 * Create a PermissionException for a single permission.
+	 * 
+	 * @param permission name of the permission
+	 */
+	public PermissionException(String permission) {
+		this.permissions = Collections.singletonList(permission);
+		this.all = true;
+		this.checkNegations = false;
+	}
 
-    /**
-     * Retrieve the associated permissions.
-     * 
-     * @return the permissions
-     */
-    public List<String> getPermissions() {
-        return permissions;
-    }
+	/**
+	 * Create a PermissionException for multiple permissions.
+	 *  
+	 * @param all true if all permissions are required
+	 * @param permissions name of permissions
+	 */
+	public PermissionException(boolean all, boolean checkNegations, String... permissions) {
+		this.permissions = Collections.unmodifiableList(new ArrayList<String>(Arrays.asList(permissions)));
+		this.all = all;
+		this.checkNegations = checkNegations;
+	}
 
-    /**
-     * Retrieve whether or not all permissions are required.
-     * 
-     * @return true if all permissions are required
-     */
-    public boolean isAll() {
-        return all;
-    }
+	/**
+	 * Retrieve the associated permissions.
+	 * 
+	 * @return the permissions
+	 */
+	public List<String> getPermissions() {
+		return permissions;
+	}
 
-    /**
-     * Retrieve whether or not negations were checked.
-     * 
-     * @return true if negations were checked
-     */
-    public boolean isCheckNegations() {
-        return checkNegations;
-    }
+	/**
+	 * Retrieve whether or not all permissions are required.
+	 * 
+	 * @return true if all permissions are required
+	 */
+	public boolean isAll() {
+		return all;
+	}
+
+	/**
+	 * Retrieve whether or not negations were checked.
+	 * 
+	 * @return true if negations were checked
+	 */
+	public boolean isCheckNegations() {
+		return checkNegations;
+	}
 
 }

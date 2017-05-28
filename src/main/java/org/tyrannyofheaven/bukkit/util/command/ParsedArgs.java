@@ -30,184 +30,184 @@ import java.util.Map;
  */
 final class ParsedArgs {
 
-    private final Map<String, String> options = new HashMap<>();
+	private final Map<String, String> options = new HashMap<String, String>();
 
-    private String[] rest = new String[0];
+	private String[] rest = new String[0];
 
-    private OptionMetaData unparsedArgument = null;
+	private OptionMetaData unparsedArgument = null;
 
-    private boolean parsedPositional = false;
+	private boolean parsedPositional = false;
 
-    private boolean parsed = false;
+	private boolean parsed = false;
 
-    // Return the OptionMetaData with the given name (usually a flag)
-    private static OptionMetaData getOption(String flag, List<OptionMetaData> options) {
-        for (OptionMetaData omd : options) {
-            for (String name : omd.getNames()) {
-                if (flag.equals(name)) {
-                    return omd;
-                }
-            }
-        }
-        return null;
-    }
+	// Return the OptionMetaData with the given name (usually a flag)
+	private static OptionMetaData getOption(String flag, List<OptionMetaData> options) {
+		for (OptionMetaData omd : options) {
+			for (String name : omd.getNames()) {
+				if (flag.equals(name)) {
+					return omd;
+				}
+			}
+		}
+		return null;
+	}
 
-    /**
-     * Parse command arguments according to the given CommandMetaData.
-     * 
-     * @param cmd
-     * @param args
-     * @return 
-     */
-    public void parse(CommandMetaData cmd, String[] args) {
-        if (cmd == null)
-            throw new IllegalArgumentException("cmd cannot be null");
+	/**
+	 * Parse command arguments according to the given CommandMetaData.
+	 * 
+	 * @param cmd
+	 * @param args
+	 * @return 
+	 */
+	public void parse(CommandMetaData cmd, String[] args) {
+		if (cmd == null)
+			throw new IllegalArgumentException("cmd cannot be null");
 
-        if (args == null)
-            args = new String[0];
+		if (args == null)
+			args = new String[0];
 
-        if (parsed)
-            throw new IllegalStateException("parse already called");
-        parsed = true;
+		if (parsed)
+			throw new IllegalStateException("parse already called");
+		parsed = true;
 
-        int pos = 0;
-        
-        // Parse flags
-        while (pos < args.length) {
-            String arg = args[pos];
-            if ("--".equals(arg)) {
-                // explicit end of flags
-                pos++;
-                parsedPositional = true; // no going back
-                break;
-            }
-            else if (OptionMetaData.isArgument(arg) || cmd.getFlagOptions().isEmpty()) {
-                // positional argument
-                break;
-            }
-            else {
-                List<String> flags = new LinkedList<>();
+		int pos = 0;
 
-                String flagArg = arg.substring(1);
-                if (!flagArg.startsWith("-")) {
-                    // Not a long flag, break it up
-                    for (char c : flagArg.toCharArray()) {
-                        flags.add("-" + Character.toString(c));
-                    }
-                }
-                else {
-                    // Use long flag as-is
-                    flags.add(arg);
-                }
+		// Parse flags
+		while (pos < args.length) {
+			String arg = args[pos];
+			if ("--".equals(arg)) {
+				// explicit end of flags
+				pos++;
+				parsedPositional = true; // no going back
+				break;
+			}
+			else if (OptionMetaData.isArgument(arg) || cmd.getFlagOptions().isEmpty()) {
+				// positional argument
+				break;
+			}
+			else {
+				List<String> flags = new LinkedList<String>();
 
-                for (String flag : flags) {
-                    OptionMetaData omd = getOption(flag, cmd.getFlagOptions());
-                    if (omd == null) {
-                        // Unknown option
-                        throw new UnknownFlagException(flag);
-                    }
-                    // Special handling of Boolean and boolean
-                    if (omd.getType() == Boolean.class || omd.getType() == Boolean.TYPE) {
-                        options.put(omd.getName(), ""); // value doesn't matter, only existence
-                    }
-                    else {
-                        // Get value
-                        pos++;
-                        if (pos >= args.length) {
-                            // Premature end
-                            throw new MissingValueException(omd, flag);
-                        }
+				String flagArg = arg.substring(1);
+				if (!flagArg.startsWith("-")) {
+					// Not a long flag, break it up
+					for (char c : flagArg.toCharArray()) {
+						flags.add("-" + Character.toString(c));
+					}
+				}
+				else {
+					// Use long flag as-is
+					flags.add(arg);
+				}
 
-                        options.put(omd.getName(), args[pos]);
-                    }
-                }
-                pos++;
-            }
-        }
-        
-        // Parse positional args
-        for (OptionMetaData omd : cmd.getPositionalArguments()) {
-            if (!omd.isOptional()) {
-                if (pos >= args.length) {
-                    if (omd.isNullable()) {
-                        // NB: No exception will be thrown and rest of arguments
-                        // will be unset. Use with care.
-                        unparsedArgument = omd;
-                        break;
-                    }
-                    else {
-                        // Ran out of args
-                        throw new MissingValueException(omd);
-                    }
-                }
-                else {
-                    options.put(omd.getName(), args[pos++]);
-                    parsedPositional = true;
-                }
-            }
-            else {
-                if (pos >= args.length) {
-                    // No more args, this and the rest should be optional
-                    unparsedArgument = omd;
-                    break;
-                }
-                else {
-                    options.put(omd.getName(), args[pos++]);
-                    parsedPositional = true;
-                }
-            }
-        }
+				for (String flag : flags) {
+					OptionMetaData omd = getOption(flag, cmd.getFlagOptions());
+					if (omd == null) {
+						// Unknown option
+						throw new UnknownFlagException(flag);
+					}
+					// Special handling of Boolean and boolean
+					if (omd.getType() == Boolean.class || omd.getType() == Boolean.TYPE) {
+						options.put(omd.getName(), ""); // value doesn't matter, only existence
+					}
+					else {
+						// Get value
+						pos++;
+						if (pos >= args.length) {
+							// Premature end
+							throw new MissingValueException(omd, flag);
+						}
 
-        rest = Arrays.copyOfRange(args, pos, args.length);
-    }
+						options.put(omd.getName(), args[pos]);
+					}
+				}
+				pos++;
+			}
+		}
 
-    /**
-     * Retrieve associated value for an option.
-     * 
-     * @param name the option name
-     * @return the associated String value
-     */
-    public String getOption(String name) {
-        if (!hasText(name))
-            throw new IllegalArgumentException("name must have a value");
+		// Parse positional args
+		for (OptionMetaData omd : cmd.getPositionalArguments()) {
+			if (!omd.isOptional()) {
+				if (pos >= args.length) {
+					if (omd.isNullable()) {
+						// NB: No exception will be thrown and rest of arguments
+						// will be unset. Use with care.
+						unparsedArgument = omd;
+						break;
+					}
+					else {
+						// Ran out of args
+						throw new MissingValueException(omd);
+					}
+				}
+				else {
+					options.put(omd.getName(), args[pos++]);
+					parsedPositional = true;
+				}
+			}
+			else {
+				if (pos >= args.length) {
+					// No more args, this and the rest should be optional
+					unparsedArgument = omd;
+					break;
+				}
+				else {
+					options.put(omd.getName(), args[pos++]);
+					parsedPositional = true;
+				}
+			}
+		}
 
-        return options.get(name);
-    }
+		rest = Arrays.copyOfRange(args, pos, args.length);
+	}
 
-    /**
-     * Retrieve option map.
-     * 
-     * @return the option map
-     */
-    public Map<String, String> getOptions() {
-        return options;
-    }
+	/**
+	 * Retrieve associated value for an option.
+	 * 
+	 * @param name the option name
+	 * @return the associated String value
+	 */
+	public String getOption(String name) {
+		if (!hasText(name))
+			throw new IllegalArgumentException("name must have a value");
 
-    /**
-     * Retrieve unparsed positional parameters.
-     * 
-     * @return unparsed positional parameters
-     */
-    public String[] getRest() {
-        return rest;
-    }
+		return options.get(name);
+	}
 
-    /**
-     * Retrieve OptionMetaData of first unparsed optional positional parameter.
-     * 
-     * @return OptionMetaData of first unparsed optional positional parameter, or null
-     */
-    public OptionMetaData getUnparsedArgument() {
-        return unparsedArgument;
-    }
+	/**
+	 * Retrieve option map.
+	 * 
+	 * @return the option map
+	 */
+	public Map<String, String> getOptions() {
+		return options;
+	}
 
-    /**
-     * Returns whether or not any positional arguments have been parsed yet.
-     * 
-     * @return true if positional arguments have been parsed
-     */
-    public boolean isParsedPositional() {
-        return parsedPositional;
-    }
+	/**
+	 * Retrieve unparsed positional parameters.
+	 * 
+	 * @return unparsed positional parameters
+	 */
+	public String[] getRest() {
+		return rest;
+	}
+
+	/**
+	 * Retrieve OptionMetaData of first unparsed optional positional parameter.
+	 * 
+	 * @return OptionMetaData of first unparsed optional positional parameter, or null
+	 */
+	public OptionMetaData getUnparsedArgument() {
+		return unparsedArgument;
+	}
+
+	/**
+	 * Returns whether or not any positional arguments have been parsed yet.
+	 * 
+	 * @return true if positional arguments have been parsed
+	 */
+	public boolean isParsedPositional() {
+		return parsedPositional;
+	}
 
 }

@@ -40,80 +40,79 @@ import org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsCore;
  */
 public class RefreshTask implements Runnable {
 
-    private final ZPermissionsCore core;
+	private final ZPermissionsCore core;
 
-    private final Plugin plugin;
+	private final Plugin plugin;
 
-    private int delay;
+	private int delay;
 
-    private final Queue<UUID> playersToRefresh = new LinkedList<>(); // synchronized on this
+	private final Queue<UUID> playersToRefresh = new LinkedList<UUID>(); // synchronized on this
 
-    private int taskId = -1; // synchronized on this
+	private int taskId = -1; // synchronized on this
 
-    public RefreshTask(ZPermissionsCore core, Plugin plugin) {
-        this.core = core;
-        this.plugin = plugin;
-    }
+	public RefreshTask(ZPermissionsCore core, Plugin plugin) {
+		this.core = core;
+		this.plugin = plugin;
+	}
 
-    public void setDelay(int delay) {
-        if (delay < 0)
-            delay = 0;
-        this.delay = delay;
-    }
+	public void setDelay(int delay) {
+		if (delay < 0)
+			delay = 0;
+		this.delay = delay;
+	}
 
-    public synchronized void start(Collection<UUID> playerUuids) {
-        if (playerUuids == null || playerUuids.isEmpty())
-            return; // Nothing to do
+	public synchronized void start(Collection<UUID> playerUuids) {
+		if (playerUuids == null || playerUuids.isEmpty())
+			return; // Nothing to do
 
-        // Build a set to maintain uniqueness
-        Set<UUID> nextPlayersToRefresh = new LinkedHashSet<>(playersToRefresh);
+		// Build a set to maintain uniqueness
+		Set<UUID> nextPlayersToRefresh = new LinkedHashSet<UUID>(playersToRefresh);
 
-        // Remember who to refresh
-        nextPlayersToRefresh.addAll(playerUuids);
+		// Remember who to refresh
+		nextPlayersToRefresh.addAll(playerUuids);
 
-        // Replace queue with set
-        playersToRefresh.clear();
-        playersToRefresh.addAll(nextPlayersToRefresh);
+		// Replace queue with set
+		playersToRefresh.clear();
+		playersToRefresh.addAll(nextPlayersToRefresh);
 
-        // Schedule task if not already scheduled
-        if (taskId < 0) {
-            debug(plugin, "Scheduling background refresh");
-            scheduleTask();
-        }
-    }
+		// Schedule task if not already scheduled
+		if (taskId < 0) {
+			debug(plugin, "Scheduling background refresh");
+			scheduleTask();
+		}
+	}
 
-    private void scheduleTask() {
-        if ((taskId = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, this, (long)delay)) < 0) {
-            error(plugin, "Failed to schedule RefreshTask! Remaining players: %s", delimitedString(", ", playersToRefresh));
-        }
-    }
+	private void scheduleTask() {
+		if ((taskId = Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, this, (long)delay)) < 0) {
+			error(plugin, "Failed to schedule RefreshTask! Remaining players: %s", delimitedString(", ", playersToRefresh));
+		}
+	}
 
-    public synchronized void stop() {
-        if (taskId > -1) {
-            warn(plugin, "RefreshTask cancelled prematurely! Remaining players: %s", delimitedString(", ", playersToRefresh));
-            Bukkit.getScheduler().cancelTask(taskId);
-            taskId = -1;
-        }
-    }
+	public synchronized void stop() {
+		if (taskId > -1) {
+			warn(plugin, "RefreshTask cancelled prematurely! Remaining players: %s", delimitedString(", ", playersToRefresh));
+			Bukkit.getScheduler().cancelTask(taskId);
+			taskId = -1;
+		}
+	}
 
-    @Override
-    public synchronized void run() {
-        taskId = -1;
+	public synchronized void run() {
+		taskId = -1;
 
-        if (!playersToRefresh.isEmpty()) {
-            UUID playerToRefresh = playersToRefresh.remove();
+		if (!playersToRefresh.isEmpty()) {
+			UUID playerToRefresh = playersToRefresh.remove();
 
-            // Refresh single player
-            core.invalidateMetadataCache("ignored", playerToRefresh, false);
-            core.refreshPlayer(playerToRefresh, RefreshCause.GROUP_CHANGE); // NB Assumes all who call start() are doing so for group- or server-wide changes
-        }
-        
-        // Schedule next player
-        if (!playersToRefresh.isEmpty()) {
-            scheduleTask();
-        }
-        else
-            debug(plugin, "Done doing background refresh!");
-    }
+			// Refresh single player
+			core.invalidateMetadataCache("ignored", playerToRefresh, false);
+			core.refreshPlayer(playerToRefresh, RefreshCause.GROUP_CHANGE); // NB Assumes all who call start() are doing so for group- or server-wide changes
+		}
+
+		// Schedule next player
+		if (!playersToRefresh.isEmpty()) {
+			scheduleTask();
+		}
+		else
+			debug(plugin, "Done doing background refresh!");
+	}
 
 }

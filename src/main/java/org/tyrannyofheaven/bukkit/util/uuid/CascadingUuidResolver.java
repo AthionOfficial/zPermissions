@@ -27,77 +27,71 @@ import java.util.UUID;
 
 public class CascadingUuidResolver implements UuidResolver {
 
-    private final List<UuidResolver> uuidResolvers;
+	private final List<UuidResolver> uuidResolvers;
 
-    public CascadingUuidResolver(UuidResolver... uuidResolvers) {
-        this(Arrays.asList(uuidResolvers));
-    }
+	public CascadingUuidResolver(UuidResolver... uuidResolvers) {
+		this(Arrays.asList(uuidResolvers));
+	}
 
-    public CascadingUuidResolver(List<UuidResolver> uuidResolvers) {
-        this.uuidResolvers = new ArrayList<>(uuidResolvers);
-    }
+	public CascadingUuidResolver(List<UuidResolver> uuidResolvers) {
+		this.uuidResolvers = new ArrayList<UuidResolver>(uuidResolvers);
+	}
 
-    @Override
-    public UuidDisplayName resolve(String username) {
-        for (UuidResolver uuidResolver : uuidResolvers) {
-            UuidDisplayName udn = uuidResolver.resolve(username);
-            if (udn != null) return udn;
-        }
-        return null;
-    }
+	public UuidDisplayName resolve(String username) {
+		for (UuidResolver uuidResolver : uuidResolvers) {
+			UuidDisplayName udn = uuidResolver.resolve(username);
+			if (udn != null) return udn;
+		}
+		return null;
+	}
 
-    @Override
-    public UuidDisplayName resolve(String username, boolean cacheOnly) {
-        for (UuidResolver uuidResolver : uuidResolvers) {
-            UuidDisplayName udn = uuidResolver.resolve(username, cacheOnly);
-            if (udn != null) return udn;
-        }
-        return null;
-    }
+	public UuidDisplayName resolve(String username, boolean cacheOnly) {
+		for (UuidResolver uuidResolver : uuidResolvers) {
+			UuidDisplayName udn = uuidResolver.resolve(username, cacheOnly);
+			if (udn != null) return udn;
+		}
+		return null;
+	}
 
-    @Override
-    public Map<String, UuidDisplayName> resolve(Collection<String> usernames) throws Exception {
-        // Remaining set of usernames to resolve
-        Set<String> remaining = new HashSet<>();
-        for (String username : usernames) {
-            // Ensure everything is lowercased
-            remaining.add(username.toLowerCase());
-        }
+	public Map<String, UuidDisplayName> resolve(Collection<String> usernames) throws Exception {
+		// Remaining set of usernames to resolve
+		Set<String> remaining = new HashSet<String>();
+		for (String username : usernames) {
+			// Ensure everything is lowercased
+			remaining.add(username.toLowerCase());
+		}
 
-        Map<String, UuidDisplayName> result = new LinkedHashMap<>();
-        for (UuidResolver uuidResolver : uuidResolvers) {
-            if (remaining.isEmpty()) break;
-            Map<String, UuidDisplayName> resolved = uuidResolver.resolve(remaining);
-            // Merge results, but don't overwrite existing entries
-            for (Map.Entry<String, UuidDisplayName> me : resolved.entrySet()) {
-                String username = me.getKey();
-                if (!result.containsKey(username)) result.put(username, me.getValue());
-            }
-            // Adjust remaining set of usernames
-            remaining.removeAll(resolved.keySet());
-        }
-        return result;
-    }
+		Map<String, UuidDisplayName> result = new LinkedHashMap<String, UuidDisplayName>();
+		for (UuidResolver uuidResolver : uuidResolvers) {
+			if (remaining.isEmpty()) break;
+			Map<String, UuidDisplayName> resolved = uuidResolver.resolve(remaining);
+			// Merge results, but don't overwrite existing entries
+			for (Map.Entry<String, UuidDisplayName> me : resolved.entrySet()) {
+				String username = me.getKey();
+				if (!result.containsKey(username)) result.put(username, me.getValue());
+			}
+			// Adjust remaining set of usernames
+			remaining.removeAll(resolved.keySet());
+		}
+		return result;
+	}
 
-    @Override
-    public void preload(String username, UUID uuid) {
-        for (UuidResolver uuidResolver : uuidResolvers) {
-            uuidResolver.preload(username, uuid);
-        }
-    }
+	public void preload(String username, UUID uuid) {
+		for (UuidResolver uuidResolver : uuidResolvers) {
+			uuidResolver.preload(username, uuid);
+		}
+	}
 
-    @Override
-    public void invalidate(String username) {
-        for (UuidResolver uuidResolver : uuidResolvers) {
-            uuidResolver.invalidate(username);
-        }
-    }
+	public void invalidate(String username) {
+		for (UuidResolver uuidResolver : uuidResolvers) {
+			uuidResolver.invalidate(username);
+		}
+	}
 
-    @Override
-    public void invalidateAll() {
-        for (UuidResolver uuidResolver : uuidResolvers) {
-            uuidResolver.invalidateAll();
-        }
-    }
+	public void invalidateAll() {
+		for (UuidResolver uuidResolver : uuidResolvers) {
+			uuidResolver.invalidateAll();
+		}
+	}
 
 }

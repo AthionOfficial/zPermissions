@@ -23,14 +23,14 @@ package org.tyrannyofheaven.bukkit.zPermissions.util;
  */
 public class MetadataConstants {
 
-    public static final String PREFIX_KEY = "prefix";
-    
-    public static final String SUFFIX_KEY = "suffix";
-    
-    public static final String PRIMARY_GROUP_TRACK_KEY = "Vault.primary-group.track";
+	public static final String PREFIX_KEY = "prefix";
 
-    private MetadataConstants() {
-        throw new AssertionError("Don't instantiate me!");
-    }
+	public static final String SUFFIX_KEY = "suffix";
+
+	public static final String PRIMARY_GROUP_TRACK_KEY = "Vault.primary-group.track";
+
+	private MetadataConstants() {
+		throw new AssertionError("Don't instantiate me!");
+	}
 
 }

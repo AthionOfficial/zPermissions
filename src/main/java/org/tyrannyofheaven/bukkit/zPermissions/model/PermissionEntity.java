@@ -52,185 +52,185 @@ import org.tyrannyofheaven.bukkit.util.uuid.UuidUtils;
 @UniqueConstraint(columnNames={"name", "is_group"})
 public class PermissionEntity {
 
-    private Long id;
+	private Long id;
 
-    private String name;
+	private String name;
 
-    private boolean group;
+	private boolean group;
 
-    private String displayName;
+	private String displayName;
 
-    private int priority;
+	private int priority;
 
-    private PermissionEntity parent;
-    
-    private Set<Entry> permissions = new HashSet<>();
+	private PermissionEntity parent;
 
-    private Set<Membership> memberships = new HashSet<>();
+	private Set<Entry> permissions = new HashSet<Entry>();
 
-    private Set<Inheritance> inheritancesAsParent = new HashSet<>();
-    
-    private Set<Inheritance> inheritancesAsChild = new HashSet<>();
+	private Set<Membership> memberships = new HashSet<Membership>();
 
-    private Set<EntityMetadata> metadata = new HashSet<>();
+	private Set<Inheritance> inheritancesAsParent = new HashSet<Inheritance>();
 
-    @Transient
-    private final Map<String, EntityMetadata> metadataMap = new HashMap<>();
+	private Set<Inheritance> inheritancesAsChild = new HashSet<Inheritance>();
 
-    @Id
-    public Long getId() {
-        return id;
-    }
+	private Set<EntityMetadata> metadata = new HashSet<EntityMetadata>();
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	@Transient
+	private final Map<String, EntityMetadata> metadataMap = new HashMap<String, EntityMetadata>();
 
-    @Column(nullable=false)
-    public String getName() {
-        return name;
-    }
+	@Id
+	public Long getId() {
+		return id;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    @Column(name="is_group", nullable=false)
-    public boolean isGroup() {
-        return group;
-    }
+	@Column(nullable=false)
+	public String getName() {
+		return name;
+	}
 
-    public void setGroup(boolean group) {
-        this.group = group;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    @Column(nullable=false)
-    public String getDisplayName() {
-        return displayName;
-    }
+	@Column(name="is_group", nullable=false)
+	public boolean isGroup() {
+		return group;
+	}
 
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
+	public void setGroup(boolean group) {
+		this.group = group;
+	}
 
-    @ManyToOne(optional=true)
-    public PermissionEntity getParent() {
-        return parent;
-    }
+	@Column(nullable=false)
+	public String getDisplayName() {
+		return displayName;
+	}
 
-    public void setParent(PermissionEntity parent) {
-        this.parent = parent;
-    }
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
 
-    @OneToMany(mappedBy="entity", cascade=CascadeType.ALL)
-    public Set<Entry> getPermissions() {
-        return permissions;
-    }
+	@ManyToOne(optional=true)
+	public PermissionEntity getParent() {
+		return parent;
+	}
 
-    public void setPermissions(Set<Entry> permissions) {
-        this.permissions = permissions;
-    }
+	public void setParent(PermissionEntity parent) {
+		this.parent = parent;
+	}
 
-    public int getPriority() {
-        return priority;
-    }
+	@OneToMany(mappedBy="entity", cascade=CascadeType.ALL)
+	public Set<Entry> getPermissions() {
+		return permissions;
+	}
 
-    public void setPriority(int priority) {
-        this.priority = priority;
-    }
+	public void setPermissions(Set<Entry> permissions) {
+		this.permissions = permissions;
+	}
 
-    @OneToMany(mappedBy="group", cascade=CascadeType.ALL)
-    public Set<Membership> getMemberships() {
-        return memberships;
-    }
+	public int getPriority() {
+		return priority;
+	}
 
-    public void setMemberships(Set<Membership> memberships) {
-        this.memberships = memberships;
-    }
+	public void setPriority(int priority) {
+		this.priority = priority;
+	}
 
-    @OneToMany(mappedBy="parent", cascade=CascadeType.ALL)
-    public Set<Inheritance> getInheritancesAsParent() {
-        return inheritancesAsParent;
-    }
+	@OneToMany(mappedBy="group", cascade=CascadeType.ALL)
+	public Set<Membership> getMemberships() {
+		return memberships;
+	}
 
-    public void setInheritancesAsParent(Set<Inheritance> inheritancesAsParent) {
-        this.inheritancesAsParent = inheritancesAsParent;
-    }
+	public void setMemberships(Set<Membership> memberships) {
+		this.memberships = memberships;
+	}
 
-    @OneToMany(mappedBy="child", cascade=CascadeType.ALL)
-    public Set<Inheritance> getInheritancesAsChild() {
-        return inheritancesAsChild;
-    }
+	@OneToMany(mappedBy="parent", cascade=CascadeType.ALL)
+	public Set<Inheritance> getInheritancesAsParent() {
+		return inheritancesAsParent;
+	}
 
-    public void setInheritancesAsChild(Set<Inheritance> inheritancesAsChild) {
-        this.inheritancesAsChild = inheritancesAsChild;
-    }
+	public void setInheritancesAsParent(Set<Inheritance> inheritancesAsParent) {
+		this.inheritancesAsParent = inheritancesAsParent;
+	}
 
-    @Transient
-    public List<PermissionEntity> getParents() {
-        List<Inheritance> inheritances = new ArrayList<>(getInheritancesAsChild());
-        Collections.sort(inheritances);
-        List<PermissionEntity> result = new ArrayList<>(inheritances.size());
-        for (Inheritance i : inheritances)
-            result.add(i.getParent());
-        return result;
-    }
+	@OneToMany(mappedBy="child", cascade=CascadeType.ALL)
+	public Set<Inheritance> getInheritancesAsChild() {
+		return inheritancesAsChild;
+	}
 
-    @Transient
-    public Set<PermissionEntity> getChildrenNew() {
-        Set<PermissionEntity> result = new LinkedHashSet<>(getInheritancesAsParent().size());
-        for (Inheritance i : getInheritancesAsParent())
-            result.add(i.getChild());
-        return result;
-    }
+	public void setInheritancesAsChild(Set<Inheritance> inheritancesAsChild) {
+		this.inheritancesAsChild = inheritancesAsChild;
+	}
 
-    @OneToMany(mappedBy="entity", cascade=CascadeType.ALL)
-    public Set<EntityMetadata> getMetadata() {
-        return metadata;
-    }
+	@Transient
+	public List<PermissionEntity> getParents() {
+		List<Inheritance> inheritances = new ArrayList<Inheritance>(getInheritancesAsChild());
+		Collections.sort(inheritances);
+		List<PermissionEntity> result = new ArrayList<PermissionEntity>(inheritances.size());
+		for (Inheritance i : inheritances)
+			result.add(i.getParent());
+		return result;
+	}
 
-    public void setMetadata(Set<EntityMetadata> metadata) {
-        this.metadata = metadata;
-    }
+	@Transient
+	public Set<PermissionEntity> getChildrenNew() {
+		Set<PermissionEntity> result = new LinkedHashSet<PermissionEntity>(getInheritancesAsParent().size());
+		for (Inheritance i : getInheritancesAsParent())
+			result.add(i.getChild());
+		return result;
+	}
 
-    @Transient
-    public Map<String, EntityMetadata> getMetadataMap() {
-        return metadataMap;
-    }
+	@OneToMany(mappedBy="entity", cascade=CascadeType.ALL)
+	public Set<EntityMetadata> getMetadata() {
+		return metadata;
+	}
 
-    public void updateMetadataMap() {
-        getMetadataMap().clear();
-        for (EntityMetadata em : getMetadata()) {
-            getMetadataMap().put(em.getName().toLowerCase(), em);
-        }
-    }
+	public void setMetadata(Set<EntityMetadata> metadata) {
+		this.metadata = metadata;
+	}
 
-    @Transient
-    public UUID getUuid() {
-        ToHUtils.assertFalse(isGroup(), "Only valid for players");
-        return UuidUtils.uncanonicalizeUuid(getName());
-    }
+	@Transient
+	public Map<String, EntityMetadata> getMetadataMap() {
+		return metadataMap;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (!(obj instanceof PermissionEntity)) return false;
-        PermissionEntity o = (PermissionEntity)obj;
-        return getName().equals(o.getName()) &&
-            isGroup() == o.isGroup();
-    }
+	public void updateMetadataMap() {
+		getMetadataMap().clear();
+		for (EntityMetadata em : getMetadata()) {
+			getMetadataMap().put(em.getName().toLowerCase(), em);
+		}
+	}
 
-    @Override
-    public int hashCode() {
-        int result = 17;
-        result = 37 * result + getName().hashCode();
-        result = 37 * result + Boolean.valueOf(isGroup()).hashCode();
-        return result;
-    }
+	@Transient
+	public UUID getUuid() {
+		ToHUtils.assertFalse(isGroup(), "Only valid for players");
+		return UuidUtils.uncanonicalizeUuid(getName());
+	}
 
-    @Override
-    public String toString() {
-        return String.format("Entity[%s,%s,%s]", getName(), getDisplayName(), isGroup());
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) return true;
+		if (!(obj instanceof PermissionEntity)) return false;
+		PermissionEntity o = (PermissionEntity)obj;
+		return getName().equals(o.getName()) &&
+				isGroup() == o.isGroup();
+	}
+
+	@Override
+	public int hashCode() {
+		int result = 17;
+		result = 37 * result + getName().hashCode();
+		result = 37 * result + Boolean.valueOf(isGroup()).hashCode();
+		return result;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("Entity[%s,%s,%s]", getName(), getDisplayName(), isGroup());
+	}
 
 }

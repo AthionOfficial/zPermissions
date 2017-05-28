@@ -12,78 +12,77 @@ import javax.persistence.UniqueConstraint;
 @UniqueConstraint(columnNames={"child_id", "parent_id"})
 public class Inheritance implements Comparable<Inheritance> {
 
-    private Long id;
-    
-    private PermissionEntity child;
+	private Long id;
 
-    private PermissionEntity parent;
+	private PermissionEntity child;
 
-    private int ordering;
+	private PermissionEntity parent;
 
-    @Id
-    public Long getId() {
-        return id;
-    }
+	private int ordering;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	@Id
+	public Long getId() {
+		return id;
+	}
 
-    @Column(name="child_id")
-    @ManyToOne(optional=false)
-    public PermissionEntity getChild() {
-        return child;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public void setChild(PermissionEntity child) {
-        this.child = child;
-    }
+	@Column(name="child_id")
+	@ManyToOne(optional=false)
+	public PermissionEntity getChild() {
+		return child;
+	}
 
-    @Column(name="parent_id")
-    @ManyToOne(optional=false)
-    public PermissionEntity getParent() {
-        return parent;
-    }
+	public void setChild(PermissionEntity child) {
+		this.child = child;
+	}
 
-    public void setParent(PermissionEntity parent) {
-        this.parent = parent;
-    }
+	@Column(name="parent_id")
+	@ManyToOne(optional=false)
+	public PermissionEntity getParent() {
+		return parent;
+	}
 
-    @Column(nullable=false)
-    public int getOrdering() {
-        return ordering;
-    }
+	public void setParent(PermissionEntity parent) {
+		this.parent = parent;
+	}
 
-    public void setOrdering(int ordering) {
-        this.ordering = ordering;
-    }
+	@Column(nullable=false)
+	public int getOrdering() {
+		return ordering;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (!(obj instanceof Inheritance)) return false;
-        Inheritance o = (Inheritance)obj;
-        return getParent().equals(o.getParent()) &&
-                getChild().equals(o.getChild());
-    }
+	public void setOrdering(int ordering) {
+		this.ordering = ordering;
+	}
 
-    @Override
-    public int hashCode() {
-        int result = 17;
-        result = 37 * result + getParent().hashCode();
-        result = 37 * result + getChild().hashCode();
-        return result;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) return true;
+		if (!(obj instanceof Inheritance)) return false;
+		Inheritance o = (Inheritance)obj;
+		return getParent().equals(o.getParent()) &&
+				getChild().equals(o.getChild());
+	}
 
-    @Override
-    public String toString() {
-        return String.format("Inheritance[%s > %s]", getParent().getName(), getChild().getName());
-    }
+	@Override
+	public int hashCode() {
+		int result = 17;
+		result = 37 * result + getParent().hashCode();
+		result = 37 * result + getChild().hashCode();
+		return result;
+	}
 
-    @Override
-    public int compareTo(Inheritance o) {
-        // Assumes child is the same... i.e. this sorts the parents
-        return getOrdering() - o.getOrdering();
-    }
+	@Override
+	public String toString() {
+		return String.format("Inheritance[%s > %s]", getParent().getName(), getChild().getName());
+	}
+
+	public int compareTo(Inheritance o) {
+		// Assumes child is the same... i.e. this sorts the parents
+		return getOrdering() - o.getOrdering();
+	}
 
 }

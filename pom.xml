@@ -73,13 +73,6 @@
 			<systemPath>${project.basedir}/jars/ToHPluginUtils.jar</systemPath>
 		</dependency>
 		<dependency>
-			<groupId>FactoidAPI</groupId>
-			<artifactId>FactoidAPI</artifactId>
-			<version>1.0</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/jars/Factoid.jar</systemPath>
-		</dependency>
-		<dependency>
 			<groupId>com.sk89q</groupId>
 			<artifactId>worldguard</artifactId>
 			<version>6.1</version>
@@ -120,17 +113,6 @@
 					<groupId>de.schlichtherle</groupId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>com.massivecraft</groupId>
-			<artifactId>Factions</artifactId>
-			<version>2.6.0</version>
-		</dependency>
-		<dependency><!-- Required by Factions -->
-			<groupId>com.massivecraft</groupId>
-			<artifactId>MassiveCore</artifactId>
-			<version>7.4.0</version>
 		</dependency>
 		<dependency>
 			<groupId>net.milkbowl.vault</groupId>

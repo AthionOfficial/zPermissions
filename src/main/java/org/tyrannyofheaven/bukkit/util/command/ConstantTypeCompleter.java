@@ -29,19 +29,18 @@ import org.bukkit.util.StringUtil;
  */
 class ConstantTypeCompleter implements TypeCompleter {
 
-    @Override
-    public List<String> complete(Class<?> clazz, String arg, CommandSender sender, String partial) {
-        if (arg != null) {
-            List<String> result = new ArrayList<>();
-            String[] parts = arg.split("\\s+");
-            for (String part : parts) {
-                part = part.trim();
-                if (!part.isEmpty() && StringUtil.startsWithIgnoreCase(part, partial))
-                    result.add(part);
-            }
-            return result;
-        }
-        return Collections.emptyList();
-    }
+	public List<String> complete(Class<?> clazz, String arg, CommandSender sender, String partial) {
+		if (arg != null) {
+			List<String> result = new ArrayList<String>();
+			String[] parts = arg.split("\\s+");
+			for (String part : parts) {
+				part = part.trim();
+				if (!part.isEmpty() && StringUtil.startsWithIgnoreCase(part, partial))
+					result.add(part);
+			}
+			return result;
+		}
+		return Collections.emptyList();
+	}
 
 }

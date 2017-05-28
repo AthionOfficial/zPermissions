@@ -17,6 +17,6 @@ package org.tyrannyofheaven.bukkit.zPermissions.uuid;
 
 public interface BulkUuidConverter {
 
-    public void migrate() throws Exception;
+	public void migrate() throws Exception;
 
 }

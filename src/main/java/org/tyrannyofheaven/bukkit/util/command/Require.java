@@ -32,19 +32,19 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Require {
 
-    /**
-     * One or more permission names.
-     */
-    public String[] value();
+	/**
+	 * One or more permission names.
+	 */
+	public String[] value();
 
-    /**
-     * Whether all permissions are required.
-     */
-    public boolean all() default false;
+	/**
+	 * Whether all permissions are required.
+	 */
+	public boolean all() default false;
 
-    /**
-     * Whether negated permissions should be explicitly checked.
-     */
-    public boolean checkNegations() default false;
+	/**
+	 * Whether negated permissions should be explicitly checked.
+	 */
+	public boolean checkNegations() default false;
 
 }

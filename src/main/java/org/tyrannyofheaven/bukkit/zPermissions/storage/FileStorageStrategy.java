@@ -43,169 +43,172 @@ import org.tyrannyofheaven.bukkit.zPermissions.dao.PermissionService;
  */
 public class FileStorageStrategy implements StorageStrategy, TransactionStrategy, Runnable {
 
-    private static final int SAVE_DELAY = 10; // seconds
+	private static final int SAVE_DELAY = 10; // seconds
 
-    private final InMemoryPermissionService permissionService = new InMemoryPermissionService();
+	private final InMemoryPermissionService permissionService = new InMemoryPermissionService();
 
-    private final FilePermissionDao permissionDao = new FilePermissionDao(permissionService);
+	private final FilePermissionDao permissionDao = new FilePermissionDao(permissionService);
 
-    private final Plugin plugin;
+	private final Plugin plugin;
 
-    private final File saveFile;
+	private final File saveFile;
 
-    private boolean initialized;
+	private boolean initialized;
 
-    private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+	private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
-    private ScheduledFuture<?> saveTask; // protected by this
+	private ScheduledFuture<?> saveTask; // protected by this
 
-    public FileStorageStrategy(Plugin plugin, File saveFile) {
-        permissionService.setPermissionDao(permissionDao);
-        this.plugin = plugin;
-        this.saveFile = saveFile;
-    }
+	public FileStorageStrategy(Plugin plugin, File saveFile) {
+		permissionService.setPermissionDao(permissionDao);
+		this.plugin = plugin;
+		this.saveFile = saveFile;
+	}
 
-    @Override
-    public void init(Map<String, Object> configMap) {
-        if (saveFile.exists()) {
-            try {
-                permissionDao.load(saveFile);
-                initialized = true;
-            }
-            catch (IOException e) {
-                log(plugin, Level.SEVERE, "Error loading permissions database:", e);
-            }
-        }
-        else {
-            initialized = true;
-        }
-    }
 
-    @Override
-    public void shutdown() {
-        if (!initialized) return; // if didn't load properly DON'T overwrite
+	public void init(Map<String, Object> configMap) {
+		if (saveFile.exists()) {
+			try {
+				permissionDao.load(saveFile);
+				initialized = true;
+			}
+			catch (IOException e) {
+				log(plugin, Level.SEVERE, "Error loading permissions database:", e);
+			}
+		}
+		else {
+			initialized = true;
+		}
+	}
 
-        // Kill scheduled async task
-        cancelSaveTask();
 
-        debug(plugin, "Saving permissions database one last time...");
-        // Queue up a final save task
-        executorService.execute(new Runnable() {
-            @Override
-            public void run() {
-                save();
-            }
-        });
-        // Start shutting down
-        executorService.shutdown();
-        // And wait
-        try {
-            long timeout = 60L;
-            log(plugin, "Waiting up to %d seconds for pending write operations...", timeout);
-            if (!executorService.awaitTermination(timeout, TimeUnit.SECONDS)) {
-                log(plugin, Level.WARNING, "Timed out before all write operations could finish; expect inconsistencies :(");
-            }
-            else {
-                log(plugin, "All write operations done.");
-            }
-        }
-        catch (InterruptedException e) {
-            // Do nothing
-        }
-    }
+	public void shutdown() {
+		if (!initialized) return; // if didn't load properly DON'T overwrite
 
-    @Override
-    public void refresh(boolean force, final Runnable finishTask) {
-        executorService.execute(new Runnable() {
-            @Override
-            public void run() {
-                cancelSaveTask();
+		// Kill scheduled async task
+		cancelSaveTask();
 
-                try {
-                    permissionDao.load(saveFile);
-                }
-                catch (IOException e) {
-                    log(plugin, Level.SEVERE, "Error loading permissions database:", e);
-                }
-                
-                if (finishTask != null)
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, finishTask);
-            }
-        });
-    }
+		debug(plugin, "Saving permissions database one last time...");
+		// Queue up a final save task
+		executorService.execute(new Runnable() {
 
-    @Override
-    public PermissionService getPermissionService() {
-        return permissionService;
-    }
+			public void run() {
+				save();
+			}
+		});
+		// Start shutting down
+		executorService.shutdown();
+		// And wait
+		try {
+			long timeout = 60L;
+			log(plugin, "Waiting up to %d seconds for pending write operations...", timeout);
+			if (!executorService.awaitTermination(timeout, TimeUnit.SECONDS)) {
+				log(plugin, Level.WARNING, "Timed out before all write operations could finish; expect inconsistencies :(");
+			}
+			else {
+				log(plugin, "All write operations done.");
+			}
+		}
+		catch (InterruptedException e) {
+			// Do nothing
+		}
+	}
 
-    @Override
-    public TransactionStrategy getTransactionStrategy() {
-        return this;
-    }
 
-    @Override
-    public TransactionStrategy getRetryingTransactionStrategy() {
-        return this;
-    }
+	public void refresh(boolean force, final Runnable finishTask) {
+		executorService.execute(new Runnable() {
 
-    @Override
-    public <T> T execute(TransactionCallback<T> callback) {
-        return execute(callback, false);
-    }
+			public void run() {
+				cancelSaveTask();
 
-    @Override
-    public <T> T execute(TransactionCallback<T> callback, boolean readOnly) {
-        if (callback == null)
-            throw new IllegalArgumentException("callback cannot be null");
-        try {
-            T result = callback.doInTransaction();
-            // Schedule a save if dirty and no pending save
-            if (permissionDao.isDirty()) {
-                synchronized (this) {
-                    if (permissionDao.isDirty() && saveTask == null) { // NB re-test dirty
-                        saveTask = executorService.schedule(this, SAVE_DELAY, TimeUnit.SECONDS);
-                    }
-                }
-            }
-            return result;
-        }
-        catch (Error | RuntimeException e) {
-            // No need to wrap these, just re-throw
-            throw e;
-        }
-        catch (Throwable t) {
-            throw new TransactionException(t);
-        }
-    }
+				try {
+					permissionDao.load(saveFile);
+				}
+				catch (IOException e) {
+					log(plugin, Level.SEVERE, "Error loading permissions database:", e);
+				}
 
-    @Override
-    public void run() {
-        debug(plugin, "Auto-saving permissions database...");
-        save();
-        synchronized (this) {
-            saveTask = null;
-        }
-    }
+				if (finishTask != null)
+					Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, finishTask);
+			}
+		});
+	}
 
-    // NB Only called from executorService, which is single-threaded
-    // All calls are therefore serialized
-    private void save() {
-        try {
-            permissionDao.save(saveFile);
-        }
-        catch (IOException e) {
-            log(plugin, Level.SEVERE, "Error saving permissions database:", e);
-        }
-    }
 
-    private void cancelSaveTask() {
-        synchronized (this) {
-            if (saveTask != null) {
-                saveTask.cancel(false);
-            }
-            saveTask = null;
-        }
-    }
+	public PermissionService getPermissionService() {
+		return permissionService;
+	}
+
+
+	public TransactionStrategy getTransactionStrategy() {
+		return this;
+	}
+
+
+	public TransactionStrategy getRetryingTransactionStrategy() {
+		return this;
+	}
+
+
+	public <T> T execute(TransactionCallback<T> callback) {
+		return execute(callback, false);
+	}
+
+
+	public <T> T execute(TransactionCallback<T> callback, boolean readOnly) {
+		if (callback == null)
+			throw new IllegalArgumentException("callback cannot be null");
+		try {
+			T result = callback.doInTransaction();
+			// Schedule a save if dirty and no pending save
+			if (permissionDao.isDirty()) {
+				synchronized (this) {
+					if (permissionDao.isDirty() && saveTask == null) { // NB re-test dirty
+						saveTask = executorService.schedule(this, SAVE_DELAY, TimeUnit.SECONDS);
+					}
+				}
+			}
+			return result;
+		}
+		catch (RuntimeException e) {
+			// No need to wrap these, just re-throw
+			throw e;
+		}
+		catch (Error e){
+			throw e;
+		}
+		catch (Throwable t) {
+			throw new TransactionException(t);
+		}
+	}
+
+
+	public void run() {
+		debug(plugin, "Auto-saving permissions database...");
+		save();
+		synchronized (this) {
+			saveTask = null;
+		}
+	}
+
+	// NB Only called from executorService, which is single-threaded
+	// All calls are therefore serialized
+	private void save() {
+		try {
+			permissionDao.save(saveFile);
+		}
+		catch (IOException e) {
+			log(plugin, Level.SEVERE, "Error saving permissions database:", e);
+		}
+	}
+
+	private void cancelSaveTask() {
+		synchronized (this) {
+			if (saveTask != null) {
+				saveTask.cancel(false);
+			}
+			saveTask = null;
+		}
+	}
 
 }

@@ -29,142 +29,142 @@ import javax.persistence.UniqueConstraint;
 @UniqueConstraint(columnNames={"entity_id", "name"})
 public class EntityMetadata {
 
-    private Long id;
-    
-    private PermissionEntity entity;
-    
-    private String name;
+	private Long id;
 
-    private String stringValue;
-    
-    private Long integerValue;
-    
-    private Double realValue;
-    
-    private Boolean booleanValue;
+	private PermissionEntity entity;
 
-    @Id
-    public Long getId() {
-        return id;
-    }
+	private String name;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	private String stringValue;
 
-    @JoinColumn(name="entity_id")
-    @ManyToOne(optional=false)
-    public PermissionEntity getEntity() {
-        return entity;
-    }
+	private Long integerValue;
 
-    public void setEntity(PermissionEntity entity) {
-        this.entity = entity;
-    }
+	private Double realValue;
 
-    @Column(nullable=false)
-    public String getName() {
-        return name;
-    }
+	private Boolean booleanValue;
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	@Id
+	public Long getId() {
+		return id;
+	}
 
-    public String getStringValue() {
-        return stringValue;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public void setStringValue(String stringValue) {
-        this.stringValue = stringValue;
-    }
+	@JoinColumn(name="entity_id")
+	@ManyToOne(optional=false)
+	public PermissionEntity getEntity() {
+		return entity;
+	}
 
-    public Long getIntegerValue() {
-        return integerValue;
-    }
+	public void setEntity(PermissionEntity entity) {
+		this.entity = entity;
+	}
 
-    public void setIntegerValue(Long integerValue) {
-        this.integerValue = integerValue;
-    }
+	@Column(nullable=false)
+	public String getName() {
+		return name;
+	}
 
-    public Double getRealValue() {
-        return realValue;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public void setRealValue(Double realValue) {
-        this.realValue = realValue;
-    }
+	public String getStringValue() {
+		return stringValue;
+	}
 
-    public Boolean getBooleanValue() {
-        return booleanValue;
-    }
+	public void setStringValue(String stringValue) {
+		this.stringValue = stringValue;
+	}
 
-    public void setBooleanValue(Boolean booleanValue) {
-        this.booleanValue = booleanValue;
-    }
+	public Long getIntegerValue() {
+		return integerValue;
+	}
 
-    @Transient
-    public Object getValue() {
-        if (getStringValue() != null)
-            return getStringValue();
-        else if (getIntegerValue() != null)
-            return getIntegerValue();
-        else if (getRealValue() != null)
-            return getRealValue();
-        else if (getBooleanValue() != null)
-            return getBooleanValue();
-        else
-            return null;
-    }
+	public void setIntegerValue(Long integerValue) {
+		this.integerValue = integerValue;
+	}
 
-    public void setValue(Object value) {
-        setStringValue(null);
-        setIntegerValue(null);
-        setRealValue(null);
-        setBooleanValue(null);
+	public Double getRealValue() {
+		return realValue;
+	}
 
-        if (value instanceof String) {
-            setStringValue((String)value);
-        }
-        else if (value instanceof Integer) {
-            setIntegerValue(((Number)value).longValue());
-        }
-        else if (value instanceof Long) {
-            setIntegerValue((Long)value);
-        }
-        else if (value instanceof Float) {
-            setRealValue(((Number)value).doubleValue());
-        }
-        else if (value instanceof Double) {
-            setRealValue((Double)value);
-        }
-        else if (value instanceof Boolean) {
-            setBooleanValue((Boolean)value);
-        }
-        else
-            throw new IllegalArgumentException("Invalid metadata value");
-    }
+	public void setRealValue(Double realValue) {
+		this.realValue = realValue;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (!(obj instanceof EntityMetadata)) return false;
-        EntityMetadata o = (EntityMetadata)obj;
-        return getEntity().equals(o.getEntity()) &&
-                getName().equals(o.getName());
-    }
+	public Boolean getBooleanValue() {
+		return booleanValue;
+	}
 
-    @Override
-    public int hashCode() {
-        int result = 17;
-        result = 37 * result + getEntity().hashCode();
-        result = 37 * result + getName().hashCode();
-        return result;
-    }
+	public void setBooleanValue(Boolean booleanValue) {
+		this.booleanValue = booleanValue;
+	}
 
-    @Override
-    public String toString() {
-        return String.format("EntityMetadata[%s]", getName());
-    }
+	@Transient
+	public Object getValue() {
+		if (getStringValue() != null)
+			return getStringValue();
+		else if (getIntegerValue() != null)
+			return getIntegerValue();
+		else if (getRealValue() != null)
+			return getRealValue();
+		else if (getBooleanValue() != null)
+			return getBooleanValue();
+		else
+			return null;
+	}
+
+	public void setValue(Object value) {
+		setStringValue(null);
+		setIntegerValue(null);
+		setRealValue(null);
+		setBooleanValue(null);
+
+		if (value instanceof String) {
+			setStringValue((String)value);
+		}
+		else if (value instanceof Integer) {
+			setIntegerValue(((Number)value).longValue());
+		}
+		else if (value instanceof Long) {
+			setIntegerValue((Long)value);
+		}
+		else if (value instanceof Float) {
+			setRealValue(((Number)value).doubleValue());
+		}
+		else if (value instanceof Double) {
+			setRealValue((Double)value);
+		}
+		else if (value instanceof Boolean) {
+			setBooleanValue((Boolean)value);
+		}
+		else
+			throw new IllegalArgumentException("Invalid metadata value");
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) return true;
+		if (!(obj instanceof EntityMetadata)) return false;
+		EntityMetadata o = (EntityMetadata)obj;
+		return getEntity().equals(o.getEntity()) &&
+				getName().equals(o.getName());
+	}
+
+	@Override
+	public int hashCode() {
+		int result = 17;
+		result = 37 * result + getEntity().hashCode();
+		result = 37 * result + getName().hashCode();
+		return result;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("EntityMetadata[%s]", getName());
+	}
 
 }

@@ -31,104 +31,105 @@ import com.avaje.ebean.EbeanServer;
  */
 public class RetryingAvajeTransactionStrategy implements TransactionStrategy {
 
-    private final EbeanServer ebeanServer;
+	private final EbeanServer ebeanServer;
 
-    private final int maxRetries;
+	private final int maxRetries;
 
-    private final PreBeginHook preBeginHook;
+	private final PreBeginHook preBeginHook;
 
-    private final PreCommitHook preCommitHook;
+	private final PreCommitHook preCommitHook;
 
-    /**
-     * Create an instance associated with the given EbeanServer.
-     * 
-     * @param ebeanServer the EbeanServer to use for transactions
-     * @param maxRetries maximum number of retry attempts (total attempts = maxRetries + 1)
-     * @param the pre-commit hook or null
-     */
-    public RetryingAvajeTransactionStrategy(EbeanServer ebeanServer, int maxRetries, PreBeginHook preBeginHook, PreCommitHook preCommitHook) {
-        if (ebeanServer == null)
-            throw new IllegalArgumentException("ebeanServer cannot be null");
-        if (maxRetries < 1)
-            throw new IllegalArgumentException("maxRetries must be > 0");
-        this.ebeanServer = ebeanServer;
-        this.maxRetries = maxRetries;
-        this.preBeginHook = preBeginHook;
-        this.preCommitHook = preCommitHook;
-    }
+	/**
+	 * Create an instance associated with the given EbeanServer.
+	 * 
+	 * @param ebeanServer the EbeanServer to use for transactions
+	 * @param maxRetries maximum number of retry attempts (total attempts = maxRetries + 1)
+	 * @param the pre-commit hook or null
+	 */
+	public RetryingAvajeTransactionStrategy(EbeanServer ebeanServer, int maxRetries, PreBeginHook preBeginHook, PreCommitHook preCommitHook) {
+		if (ebeanServer == null)
+			throw new IllegalArgumentException("ebeanServer cannot be null");
+		if (maxRetries < 1)
+			throw new IllegalArgumentException("maxRetries must be > 0");
+		this.ebeanServer = ebeanServer;
+		this.maxRetries = maxRetries;
+		this.preBeginHook = preBeginHook;
+		this.preCommitHook = preCommitHook;
+	}
 
-    /**
-     * Create an instance associated with the given EbeanServer.
-     * 
-     * @param ebeanServer the EbeanServer to use for transactions
-     * @param maxRetries maximum number of retry attempts (total attempts = maxRetries + 1)
-     */
-    public RetryingAvajeTransactionStrategy(EbeanServer ebeanServer, int maxRetries) {
-        this(ebeanServer, maxRetries, null, null);
-    }
+	/**
+	 * Create an instance associated with the given EbeanServer.
+	 * 
+	 * @param ebeanServer the EbeanServer to use for transactions
+	 * @param maxRetries maximum number of retry attempts (total attempts = maxRetries + 1)
+	 */
+	public RetryingAvajeTransactionStrategy(EbeanServer ebeanServer, int maxRetries) {
+		this(ebeanServer, maxRetries, null, null);
+	}
 
-    // Retrieve the EbeanServer
-    private EbeanServer getEbeanServer() {
-        return ebeanServer;
-    }
+	// Retrieve the EbeanServer
+	private EbeanServer getEbeanServer() {
+		return ebeanServer;
+	}
 
-    // Retrieve the pre-begin hook
-    private PreBeginHook getPreBeginHook() {
-        return preBeginHook;
-    }
+	// Retrieve the pre-begin hook
+	private PreBeginHook getPreBeginHook() {
+		return preBeginHook;
+	}
 
-    // Retrieve the pre-commit hook
-    private PreCommitHook getPreCommitHook() {
-        return preCommitHook;
-    }
+	// Retrieve the pre-commit hook
+	private PreCommitHook getPreCommitHook() {
+		return preCommitHook;
+	}
 
-    /* (non-Javadoc)
-     * @see org.tyrannyofheaven.bukkit.util.transaction.TransactionStrategy#execute(org.tyrannyofheaven.bukkit.util.transaction.TransactionCallback)
-     */
-    @Override
-    public <T> T execute(TransactionCallback<T> callback) {
-        return execute(callback, false);
-    }
+	/* (non-Javadoc)
+	 * @see org.tyrannyofheaven.bukkit.util.transaction.TransactionStrategy#execute(org.tyrannyofheaven.bukkit.util.transaction.TransactionCallback)
+	 */
+	public <T> T execute(TransactionCallback<T> callback) {
+		return execute(callback, false);
+	}
 
-    /* (non-Javadoc)
-     * @see org.tyrannyofheaven.bukkit.util.transaction.TransactionStrategy#execute(org.tyrannyofheaven.bukkit.util.transaction.TransactionCallback, boolean)
-     */
-    @Override
-    public <T> T execute(TransactionCallback<T> callback, boolean readOnly) {
-        if (callback == null)
-            throw new IllegalArgumentException("callback cannot be null");
-        PersistenceException savedPE = null;
-        for (int attempt = -1; attempt < maxRetries; attempt++) {
-            try {
-                if (getPreBeginHook() != null)
-                    getPreBeginHook().preBegin(readOnly);
-                getEbeanServer().beginTransaction();
-                try {
-                    T result = callback.doInTransaction();
-                    if (getPreCommitHook() != null)
-                        getPreCommitHook().preCommit(readOnly);
-                    getEbeanServer().commitTransaction();
-                    return result;
-                }
-                finally {
-                    getEbeanServer().endTransaction();
-                }
-            }
-            catch (PersistenceException e) {
-                savedPE = e;
-                continue;
-            }
-            catch (Error | RuntimeException e) {
-                // No need to wrap these, just re-throw
-                throw e;
-            }
-            catch (Throwable t) {
-                throw new TransactionException(t);
-            }
-        }
+	/* (non-Javadoc)
+	 * @see org.tyrannyofheaven.bukkit.util.transaction.TransactionStrategy#execute(org.tyrannyofheaven.bukkit.util.transaction.TransactionCallback, boolean)
+	 */
+	public <T> T execute(TransactionCallback<T> callback, boolean readOnly) {
+		if (callback == null)
+			throw new IllegalArgumentException("callback cannot be null");
+		PersistenceException savedPE = null;
+		for (int attempt = -1; attempt < maxRetries; attempt++) {
+			try {
+				if (getPreBeginHook() != null)
+					getPreBeginHook().preBegin(readOnly);
+				getEbeanServer().beginTransaction();
+				try {
+					T result = callback.doInTransaction();
+					if (getPreCommitHook() != null)
+						getPreCommitHook().preCommit(readOnly);
+					getEbeanServer().commitTransaction();
+					return result;
+				}
+				finally {
+					getEbeanServer().endTransaction();
+				}
+			}
+			catch (PersistenceException e) {
+				savedPE = e;
+				continue;
+			}
+			catch (RuntimeException e) {
+				// No need to wrap these, just re-throw
+				throw e;
+			}
+			catch (Error e){
+				throw e;
+			}
+			catch (Throwable t) {
+				throw new TransactionException(t);
+			}
+		}
 
-        // At this point, we've run out of attempts
-        throw savedPE;
-    }
+		// At this point, we've run out of attempts
+		throw savedPE;
+	}
 
 }

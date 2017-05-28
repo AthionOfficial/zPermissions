@@ -31,54 +31,52 @@ import org.tyrannyofheaven.bukkit.util.transaction.TransactionStrategy;
  */
 class TransactionRunnable implements Runnable, TransactionCallback<Object> {
 
-    private final Logger logger = Logger.getLogger(getClass().getName());
+	private final Logger logger = Logger.getLogger(getClass().getName());
 
-    private final TransactionStrategy transactionStrategy;
+	private final TransactionStrategy transactionStrategy;
 
-    private final boolean readOnly;
+	private final boolean readOnly;
 
-    private final List<Runnable> runnables = new ArrayList<>();
+	private final List<Runnable> runnables = new ArrayList<Runnable>();
 
-    public TransactionRunnable(TransactionStrategy transactionStrategy, boolean readOnly) {
-        this.transactionStrategy = transactionStrategy;
-        this.readOnly = readOnly;
-    }
+	public TransactionRunnable(TransactionStrategy transactionStrategy, boolean readOnly) {
+		this.transactionStrategy = transactionStrategy;
+		this.readOnly = readOnly;
+	}
 
-    public void addRunnable(Runnable runnable) {
-        runnables.add(runnable);
-    }
+	public void addRunnable(Runnable runnable) {
+		runnables.add(runnable);
+	}
 
-    public boolean isEmpty() {
-        return runnables.isEmpty();
-    }
+	public boolean isEmpty() {
+		return runnables.isEmpty();
+	}
 
-    private TransactionStrategy getTransactionStrategy() {
-        return transactionStrategy;
-    }
+	private TransactionStrategy getTransactionStrategy() {
+		return transactionStrategy;
+	}
 
-    private List<Runnable> getRunnables() {
-        return runnables;
-    }
+	private List<Runnable> getRunnables() {
+		return runnables;
+	}
 
-    @Override
-    public void run() {
-        try {
-            getTransactionStrategy().execute(this, readOnly);
-        }
-        catch (Error e) {
-            throw e;
-        }
-        catch (Throwable t) {
-            logger.log(Level.SEVERE, "Error executing transaction", t);
-        }
-    }
+	public void run() {
+		try {
+			getTransactionStrategy().execute(this, readOnly);
+		}
+		catch (Error e) {
+			throw e;
+		}
+		catch (Throwable t) {
+			logger.log(Level.SEVERE, "Error executing transaction", t);
+		}
+	}
 
-    @Override
-    public Object doInTransaction() throws Exception {
-        for (Runnable runnable : getRunnables()) {
-            runnable.run();
-        }
-        return null;
-    }
+	public Object doInTransaction() throws Exception {
+		for (Runnable runnable : getRunnables()) {
+			runnable.run();
+		}
+		return null;
+	}
 
 }

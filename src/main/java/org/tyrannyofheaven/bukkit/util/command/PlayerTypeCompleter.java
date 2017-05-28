@@ -31,18 +31,17 @@ import org.bukkit.util.StringUtil;
  */
 class PlayerTypeCompleter implements TypeCompleter {
 
-    @Override
-    public List<String> complete(Class<?> clazz, String arg, CommandSender sender, String partial) {
-        if (clazz == String.class) {
-            List<String> result = new ArrayList<>();
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                if (StringUtil.startsWithIgnoreCase(player.getName(), partial))
-                    result.add(player.getName());
-            }
-            Collections.sort(result);
-            return result;
-        }
-        return Collections.emptyList();
-    }
+	public List<String> complete(Class<?> clazz, String arg, CommandSender sender, String partial) {
+		if (clazz == String.class) {
+			List<String> result = new ArrayList<String>();
+			for (Player player : Bukkit.getOnlinePlayers()) {
+				if (StringUtil.startsWithIgnoreCase(player.getName(), partial))
+					result.add(player.getName());
+			}
+			Collections.sort(result);
+			return result;
+		}
+		return Collections.emptyList();
+	}
 
 }

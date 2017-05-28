@@ -22,22 +22,22 @@ package org.tyrannyofheaven.bukkit.util.command;
  */
 public class MissingValueException extends ParseException {
 
-    private static final long serialVersionUID = 9207028064109673003L;
+	private static final long serialVersionUID = 9207028064109673003L;
 
-    private final OptionMetaData optionMetaData;
+	private final OptionMetaData optionMetaData;
 
-    MissingValueException(OptionMetaData optionMetaData) {
-        super("Missing argument: " + optionMetaData.getName());
-        this.optionMetaData = optionMetaData;
-    }
+	MissingValueException(OptionMetaData optionMetaData) {
+		super("Missing argument: " + optionMetaData.getName());
+		this.optionMetaData = optionMetaData;
+	}
 
-    MissingValueException(OptionMetaData optionMetaData, String flag) {
-        super("Missing value for flag: " + flag); // could use optionMetaData.getName(), but want passed-in name
-        this.optionMetaData = optionMetaData;
-    }
+	MissingValueException(OptionMetaData optionMetaData, String flag) {
+		super("Missing value for flag: " + flag); // could use optionMetaData.getName(), but want passed-in name
+		this.optionMetaData = optionMetaData;
+	}
 
-    public OptionMetaData getOptionMetaData() {
-        return optionMetaData;
-    }
+	public OptionMetaData getOptionMetaData() {
+		return optionMetaData;
+	}
 
 }

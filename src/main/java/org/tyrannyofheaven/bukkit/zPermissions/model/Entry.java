@@ -33,103 +33,103 @@ import javax.persistence.UniqueConstraint;
 @UniqueConstraint(columnNames={"entity_id", "region_id", "world_id", "permission"})
 public class Entry {
 
-    private Long id;
+	private Long id;
 
-    private PermissionEntity entity;
+	private PermissionEntity entity;
 
-    private PermissionRegion region;
+	private PermissionRegion region;
 
-    private PermissionWorld world;
+	private PermissionWorld world;
 
-    private String permission;
-    
-    private boolean value;
+	private String permission;
 
-    @Id
-    public Long getId() {
-        return id;
-    }
+	private boolean value;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	@Id
+	public Long getId() {
+		return id;
+	}
 
-    @JoinColumn(name="entity_id")
-    @ManyToOne(optional=false)
-    public PermissionEntity getEntity() {
-        return entity;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public void setEntity(PermissionEntity owner) {
-        this.entity = owner;
-    }
+	@JoinColumn(name="entity_id")
+	@ManyToOne(optional=false)
+	public PermissionEntity getEntity() {
+		return entity;
+	}
 
-    @JoinColumn(name="region_id")
-    @ManyToOne(optional=true)
-    public PermissionRegion getRegion() {
-        return region;
-    }
+	public void setEntity(PermissionEntity owner) {
+		this.entity = owner;
+	}
 
-    public void setRegion(PermissionRegion region) {
-        this.region = region;
-    }
+	@JoinColumn(name="region_id")
+	@ManyToOne(optional=true)
+	public PermissionRegion getRegion() {
+		return region;
+	}
 
-    @JoinColumn(name="world_id")
-    @ManyToOne(optional=true)
-    public PermissionWorld getWorld() {
-        return world;
-    }
+	public void setRegion(PermissionRegion region) {
+		this.region = region;
+	}
 
-    public void setWorld(PermissionWorld world) {
-        this.world = world;
-    }
+	@JoinColumn(name="world_id")
+	@ManyToOne(optional=true)
+	public PermissionWorld getWorld() {
+		return world;
+	}
 
-    @Column(nullable=false)
-    public String getPermission() {
-        return permission;
-    }
+	public void setWorld(PermissionWorld world) {
+		this.world = world;
+	}
 
-    public void setPermission(String permission) {
-        this.permission = permission;
-    }
+	@Column(nullable=false)
+	public String getPermission() {
+		return permission;
+	}
 
-    @Column(nullable=false)
-    public boolean isValue() {
-        return value;
-    }
+	public void setPermission(String permission) {
+		this.permission = permission;
+	}
 
-    public void setValue(boolean value) {
-        this.value = value;
-    }
+	@Column(nullable=false)
+	public boolean isValue() {
+		return value;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (!(obj instanceof Entry)) return false;
-        Entry o = (Entry)obj;
-        return getEntity().equals(o.getEntity()) &&
-            (getRegion() == null ? o.getRegion() == null : getRegion().equals(o.getRegion())) &&
-            (getWorld() == null ? o.getWorld() == null : getWorld().equals(o.getWorld())) &&
-            getPermission().equals(o.getPermission());
-    }
+	public void setValue(boolean value) {
+		this.value = value;
+	}
 
-    @Override
-    public int hashCode() {
-        int result = 17;
-        result = 37 * result + getEntity().hashCode();
-        result = 37 * result + (getRegion() == null ? 0 : getRegion().hashCode());
-        result = 37 * result + (getWorld() == null ? 0 : getWorld().hashCode());
-        result = 37 * result + getPermission().hashCode();
-        return result;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) return true;
+		if (!(obj instanceof Entry)) return false;
+		Entry o = (Entry)obj;
+		return getEntity().equals(o.getEntity()) &&
+				(getRegion() == null ? o.getRegion() == null : getRegion().equals(o.getRegion())) &&
+				(getWorld() == null ? o.getWorld() == null : getWorld().equals(o.getWorld())) &&
+				getPermission().equals(o.getPermission());
+	}
 
-    @Override
-    public String toString() {
-        return String.format("%s%s%s -> %s",
-                (getRegion() == null ? "" : getRegion().getName() + "/"),
-                (getWorld() == null ? "" : getWorld().getName() + ":"),
-                getPermission(),
-                isValue());
-    }
+	@Override
+	public int hashCode() {
+		int result = 17;
+		result = 37 * result + getEntity().hashCode();
+		result = 37 * result + (getRegion() == null ? 0 : getRegion().hashCode());
+		result = 37 * result + (getWorld() == null ? 0 : getWorld().hashCode());
+		result = 37 * result + getPermission().hashCode();
+		return result;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("%s%s%s -> %s",
+				(getRegion() == null ? "" : getRegion().getName() + "/"),
+				(getWorld() == null ? "" : getWorld().getName() + ":"),
+				getPermission(),
+				isValue());
+	}
 
 }

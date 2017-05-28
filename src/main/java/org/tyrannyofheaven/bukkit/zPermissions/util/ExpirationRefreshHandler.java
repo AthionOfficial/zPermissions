@@ -41,129 +41,129 @@ import org.tyrannyofheaven.bukkit.zPermissions.storage.StorageStrategy;
 
 public class ExpirationRefreshHandler implements Runnable {
 
-    private static final Comparator<Membership> MEMBERSHIP_EXPIRATION_COMPARATOR = new Comparator<Membership>() {
-        @Override
-        public int compare(Membership a, Membership b) {
-            return a.getExpiration().compareTo(b.getExpiration());
-        }
-    };
+	private static final Comparator<Membership> MEMBERSHIP_EXPIRATION_COMPARATOR = new Comparator<Membership>() {
 
-    private static final long FUDGE = 1000L;
+		public int compare(Membership a, Membership b) {
+			return a.getExpiration().compareTo(b.getExpiration());
+		}
+	};
 
-    private final ZPermissionsCore core;
+	private static final long FUDGE = 1000L;
 
-    private final StorageStrategy storageStrategy;
+	private final ZPermissionsCore core;
 
-    private final Plugin plugin;
+	private final StorageStrategy storageStrategy;
 
-    private final ScheduledExecutorService executorService;
+	private final Plugin plugin;
 
-    private final Queue<Membership> membershipQueue = new PriorityQueue<>(11, MEMBERSHIP_EXPIRATION_COMPARATOR); // synchronized on this
+	private final ScheduledExecutorService executorService;
 
-    private ScheduledFuture<?> scheduledFuture; // synchronized on this
+	private final Queue<Membership> membershipQueue = new PriorityQueue<Membership>(11, MEMBERSHIP_EXPIRATION_COMPARATOR); // synchronized on this
 
-    public ExpirationRefreshHandler(ZPermissionsCore core, StorageStrategy storageStrategy, Plugin plugin) {
-        this.core = core;
-        this.storageStrategy = storageStrategy;
-        this.plugin = plugin;
-        
-        executorService = Executors.newSingleThreadScheduledExecutor();
-    }
+	private ScheduledFuture<?> scheduledFuture; // synchronized on this
 
-    public synchronized void rescan() {
-        membershipQueue.clear();
-        Date now = new Date();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            for (Membership membership : storageStrategy.getPermissionService().getGroups(player.getUniqueId())) {
-                if (membership.getExpiration() != null && membership.getExpiration().after(now)) {
-                    membershipQueue.add(membership);
-                }
-            }
-        }
+	public ExpirationRefreshHandler(ZPermissionsCore core, StorageStrategy storageStrategy, Plugin plugin) {
+		this.core = core;
+		this.storageStrategy = storageStrategy;
+		this.plugin = plugin;
 
-        debug(plugin, "Potential future expirations: %s", membershipQueue);
+		executorService = Executors.newSingleThreadScheduledExecutor();
+	}
 
-        // Queue up task
-        run();
-    }
+	public synchronized void rescan() {
+		membershipQueue.clear();
+		Date now = new Date();
+		for (Player player : Bukkit.getOnlinePlayers()) {
+			for (Membership membership : storageStrategy.getPermissionService().getGroups(player.getUniqueId())) {
+				if (membership.getExpiration() != null && membership.getExpiration().after(now)) {
+					membershipQueue.add(membership);
+				}
+			}
+		}
 
-    @Override
-    public synchronized void run() {
-        Set<UUID> toRefresh = new LinkedHashSet<>();
-        final Set<Membership> expired = new LinkedHashSet<>();
+		debug(plugin, "Potential future expirations: %s", membershipQueue);
 
-        // Gather up memberships that have already expired
-        Date now = new Date();
-        Membership next = membershipQueue.peek();
-        while (next != null && !next.getExpiration().after(now)) {
-            membershipQueue.remove();
+		// Queue up task
+		run();
+	}
 
-            toRefresh.add(next.getUuid());
-            expired.add(next);
 
-            now = new Date();
-            next = membershipQueue.peek();
-        }
+	public synchronized void run() {
+		Set<UUID> toRefresh = new LinkedHashSet<UUID>();
+		final Set<Membership> expired = new LinkedHashSet<Membership>();
 
-        debug(plugin, "Refreshing expired players: %s", toRefresh);
-        // NB Metadata cache for offline players not invalidated.
-        // This might become a problem. But nothing can be done unless we
-        // run a timer for each and every membership, online or offline.
-        core.refreshPlayers(toRefresh);
+		// Gather up memberships that have already expired
+		Date now = new Date();
+		Membership next = membershipQueue.peek();
+		while (next != null && !next.getExpiration().after(now)) {
+			membershipQueue.remove();
 
-        // Send notifications
-        if (!expired.isEmpty()) {
-            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-                @Override
-                public void run() {
-                    for (Membership membership : expired) {
-                        Player player = Bukkit.getPlayer(membership.getUuid());
-                        if (player != null && player.hasPermission("zpermissions.notify.self.expiration")) {
-                            sendMessage(player, colorize("{YELLOW}Your membership to {DARK_GREEN}%s{YELLOW} has expired."), membership.getGroup().getDisplayName());
-                        }
-                        broadcast(plugin, "zpermissions.notify.expiration",
-                                "Player %s is no longer a member of %s",
-                                membership.getDisplayName(), membership.getGroup().getDisplayName());
-                    }
-                }
-            });
-        }
+			toRefresh.add(next.getUuid());
+			expired.add(next);
 
-        // Cancel previous task
-        if (scheduledFuture != null) {
-            scheduledFuture.cancel(false);
-            scheduledFuture = null;
-        }
+			now = new Date();
+			next = membershipQueue.peek();
+		}
 
-        // Schedule new task
-        if (next != null) {
-            now = new Date();
-            long delay = next.getExpiration().getTime() - now.getTime();
+		debug(plugin, "Refreshing expired players: %s", toRefresh);
+		// NB Metadata cache for offline players not invalidated.
+		// This might become a problem. But nothing can be done unless we
+		// run a timer for each and every membership, online or offline.
+		core.refreshPlayers(toRefresh);
 
-            if (delay < 0L)
-                delay = 0L; // Weird...
+		// Send notifications
+		if (!expired.isEmpty()) {
+			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 
-            debug(plugin, "Next expiration is %dms away", delay);
+				public void run() {
+					for (Membership membership : expired) {
+						Player player = Bukkit.getPlayer(membership.getUuid());
+						if (player != null && player.hasPermission("zpermissions.notify.self.expiration")) {
+							sendMessage(player, colorize("{YELLOW}Your membership to {DARK_GREEN}%s{YELLOW} has expired."), membership.getGroup().getDisplayName());
+						}
+						broadcast(plugin, "zpermissions.notify.expiration",
+								"Player %s is no longer a member of %s",
+								membership.getDisplayName(), membership.getGroup().getDisplayName());
+					}
+				}
+			});
+		}
 
-            final Runnable realThis = this;
-            scheduledFuture = executorService.schedule(new Runnable() {
-                @Override
-                public void run() {
-                    debug(plugin, "Expiring...");
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, realThis);
-                }
-            }, delay + FUDGE, TimeUnit.MILLISECONDS);
-        }
-        else
-            debug(plugin, "No future expirations");
-    }
+		// Cancel previous task
+		if (scheduledFuture != null) {
+			scheduledFuture.cancel(false);
+			scheduledFuture = null;
+		}
 
-    public void shutdown() {
-        if (scheduledFuture != null) {
-            scheduledFuture.cancel(false);
-            scheduledFuture = null;
-        }
-        executorService.shutdownNow();
-    }
+		// Schedule new task
+		if (next != null) {
+			now = new Date();
+			long delay = next.getExpiration().getTime() - now.getTime();
+
+			if (delay < 0L)
+				delay = 0L; // Weird...
+
+			debug(plugin, "Next expiration is %dms away", delay);
+
+			final Runnable realThis = this;
+			scheduledFuture = executorService.schedule(new Runnable() {
+
+				public void run() {
+					debug(plugin, "Expiring...");
+					Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, realThis);
+				}
+			}, delay + FUDGE, TimeUnit.MILLISECONDS);
+		}
+		else
+			debug(plugin, "No future expirations");
+	}
+
+	public void shutdown() {
+		if (scheduledFuture != null) {
+			scheduledFuture.cancel(false);
+			scheduledFuture = null;
+		}
+		executorService.shutdownNow();
+	}
 
 }

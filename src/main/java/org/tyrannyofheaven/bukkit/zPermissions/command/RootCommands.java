@@ -67,458 +67,454 @@ import org.tyrannyofheaven.bukkit.zPermissions.util.Utils;
  */
 public class RootCommands {
 
-    private final ZPermissionsCore core;
-    
-    private final StorageStrategy storageStrategy;
+	private final ZPermissionsCore core;
 
-    private final PermissionsResolver resolver;
+	private final StorageStrategy storageStrategy;
 
-    private final ZPermissionsConfig config;
+	private final PermissionsResolver resolver;
 
-    // Parent plugin
-    private final Plugin plugin;
+	private final ZPermissionsConfig config;
 
-    private final CommandUuidResolver commandUuidResolver;
+	// Parent plugin
+	private final Plugin plugin;
 
-    // Handler for /permissions sub-commands
-    private final SubCommands sc;
+	private final CommandUuidResolver commandUuidResolver;
 
-    private static enum BroadcastScope {
-        DEFAULT(true), QUIET(false), LOUD(true), QUIET_LOUD(false);
-        
-        private final boolean shouldEcho;
-        
-        private BroadcastScope(boolean shouldEcho) {
-            this.shouldEcho = shouldEcho;
-        }
-        
-        public boolean isShouldEcho() {
-            return shouldEcho;
-        }
+	// Handler for /permissions sub-commands
+	private final SubCommands sc;
 
-    }
+	private static enum BroadcastScope {
+		DEFAULT(true), QUIET(false), LOUD(true), QUIET_LOUD(false);
 
-    public RootCommands(ZPermissionsCore core, StorageStrategy storageStrategy, PermissionsResolver resolver, ModelDumper modelDumper, ZPermissionsConfig config, Plugin plugin, CommandUuidResolver commandUuidResolver, UuidResolver uuidResolver) {
-        this.core = core;
-        this.storageStrategy = storageStrategy;
-        this.resolver = resolver;
-        this.config = config;
-        this.plugin = plugin;
-        this.commandUuidResolver = commandUuidResolver;
+		private final boolean shouldEcho;
 
-        sc = new SubCommands(core, storageStrategy, resolver, modelDumper, config, plugin, commandUuidResolver, uuidResolver);
-    }
+		private BroadcastScope(boolean shouldEcho) {
+			this.shouldEcho = shouldEcho;
+		}
 
-    @Command("permissions")
-    @Require({"zpermissions.player.view", "zpermissions.player.manage", "zpermissions.player.chat",
-        "zpermissions.group.view", "zpermissions.group.manage", "zpermissions.group.chat",
-        "zpermissions.list", "zpermissions.check", "zpermissions.reload", "zpermissions.import", "zpermissions.export", "zpermissions.inspect",
-        "zpermissions.mygroups", "zpermissions.purge", "zpermissions.diff", "zpermissions.mychat"})
-    public Object perm(HelpBuilder helpBuilder, CommandSender sender, String[] args) {
-        if (args.length == 0) {
-            helpBuilder.withCommandSender(sender)
-                .withHandler(sc)
-                .forCommand("player")
-                .forCommand("group")
-                .forCommand("list")
-                .forCommand("check")
-                .forCommand("inspect")
-                .forCommand("diff")
-                .forCommand("mygroups")
-                .forCommand("prefix")
-                .forCommand("suffix")
-                .forCommand("reload")
-                .forCommand("import")
-                .forCommand("export")
-                .forCommand("refresh")
-                .show();
-            abortBatchProcessing();
-            return null;
-        }
-        return sc;
-    }
+		public boolean isShouldEcho() {
+			return shouldEcho;
+		}
 
-    // Audit record of change. If quiet, only log to server log rather than
-    // broadcasting to admins.
-    private void announce(String notifyNode, BroadcastScope scope, String format, Object... args) {
-        if (scope == BroadcastScope.DEFAULT) {
-            if (config.isRankAdminBroadcast()) {
-                ToHMessageUtils.broadcastAdmin(plugin, format, args);
-            }
-            else {
-                ToHMessageUtils.broadcast(plugin, "zpermissions.notify." + notifyNode, format, args);
-                ToHLoggingUtils.log(plugin, format, args); // ensure it also goes to log
-            }
-        }
-        else if (scope == BroadcastScope.QUIET)
-            ToHLoggingUtils.log(plugin, format, args);
-        else
-            ToHMessageUtils.broadcastMessage(plugin, format, args);
-    }
+	}
 
-    private void rankChange(final CommandSender sender, final String playerName, final String trackName, final boolean rankUp, final BroadcastScope scope, final boolean verbose) {
-        commandUuidResolver.resolveUsername(sender, playerName, false, new CommandUuidResolverHandler() {
-            @Override
-            public void process(CommandSender sender, String name, UUID uuid, boolean group) {
-                rankChange(sender, uuid, name, trackName, rankUp, scope, verbose);
-            }
-        });
-    }
+	public RootCommands(ZPermissionsCore core, StorageStrategy storageStrategy, PermissionsResolver resolver, ModelDumper modelDumper, ZPermissionsConfig config, Plugin plugin, CommandUuidResolver commandUuidResolver, UuidResolver uuidResolver) {
+		this.core = core;
+		this.storageStrategy = storageStrategy;
+		this.resolver = resolver;
+		this.config = config;
+		this.plugin = plugin;
+		this.commandUuidResolver = commandUuidResolver;
 
-    // Perform the actual promotion/demotion
-    private void rankChange(final CommandSender sender, final UUID uuid, final String playerName, String trackName, final boolean rankUp, final BroadcastScope scope, final boolean verbose) {
-        // Resolve track
-        final TrackMetaData trackMetaData = getTrack(sender, rankUp ? "promote" : "demote", trackName);
-        if (trackMetaData == null)
-            return;
-        final List<String> track = trackMetaData.getTrack();
+		sc = new SubCommands(core, storageStrategy, resolver, modelDumper, config, plugin, commandUuidResolver, uuidResolver);
+	}
 
-        // Do everything in one ginormous transaction.
-        storageStrategy.getTransactionStrategy().execute(new TransactionCallback<Boolean>() {
-            @Override
-            public Boolean doInTransaction() throws Exception {
-                Set<String> playerGroupNames = new HashSet<>();
-                playerGroupNames.addAll(Utils.toGroupNames(Utils.filterExpired(storageStrategy.getPermissionService().getGroups(uuid))));
-                if (playerGroupNames.isEmpty())
-                    playerGroupNames.add(resolver.getDefaultGroup());
-        
-                // Determine what groups the player and the track have in common
-                playerGroupNames = getCommonGroups(playerGroupNames, track);
-                
-                if (playerGroupNames.size() > 1) {
-                    // Hmm, player is member of 2 or more groups in track. Don't know
-                    // what to do, so abort.
-                    sendMessage(sender, colorize("{RED}Player is in more than one group in that track: {DARK_GREEN}%s"), delimitedString(", ", playerGroupNames));
-                    abortBatchProcessing();
-                    return false;
-                }
-                else if (playerGroupNames.isEmpty()) {
-                    // Player not in any group. Only valid for rankUp
-                    if (rankUp) {
-                        String group = track.get(0);
-                        try {
-                            storageStrategy.getPermissionService().addMember(group, uuid, playerName, null);
-                        }
-                        catch (MissingGroupException e) {
-                            sendMessage(sender, colorize("{RED}Group {DARK_GREEN}%s{RED} does not exist."), e.getGroupName());
-                            abortBatchProcessing();
-                            return false;
-                        }
-                        announce("promote", scope, "%s added %s to %s", sender.getName(), playerName, group);
-                        if (scope.isShouldEcho() || verbose)
-                            sendMessage(sender, colorize("{YELLOW}Adding {AQUA}%s{YELLOW} to {DARK_GREEN}%s"), playerName, group);
-                        fireRankEvent(playerName, trackMetaData.getTrackName(), null, group);
-                    }
-                    else {
-                        sendMessage(sender, colorize("{RED}Player is not in any groups in that track."));
-                        abortBatchProcessing();
-                    }
-                    return true;
-                }
-                else {
-                    String oldGroup = playerGroupNames.iterator().next();
-                    int rankIndex = track.indexOf(oldGroup);
-                    assertFalse(rankIndex < 0); // should never happen...
-        
-                    // Rank up or down
-                    rankIndex += rankUp ? 1 : -1;
-        
-                    // If now ranked below first rank, remove altogether
-                    if (rankIndex < 0) {
-                        storageStrategy.getPermissionService().removeMember(oldGroup, uuid);
-                        announce(rankUp ? "promote" : "demote", scope, "%s removed %s from %s", sender.getName(), playerName, oldGroup);
-                        if (scope.isShouldEcho() || verbose)
-                            sendMessage(sender, colorize("{YELLOW}Removing {AQUA}%s{YELLOW} from {DARK_GREEN}%s"), playerName, oldGroup);
-                        fireRankEvent(playerName, trackMetaData.getTrackName(), oldGroup, null);
-                    }
-                    else {
-                        // Constrain rank to [1..track.size() - 1]
-                        if (rankIndex >= track.size()) rankIndex = track.size() - 1;
-        
-                        String newGroup = track.get(rankIndex);
-        
-                        // Change groups
-                        try {
-                            storageStrategy.getPermissionService().addMember(newGroup, uuid, playerName, null);
-                        }
-                        catch (MissingGroupException e) {
-                            sendMessage(sender, colorize("{RED}Group {DARK_GREEN}%s{RED} does not exist."), e.getGroupName());
-                            abortBatchProcessing();
-                            return false;
-                        }
-                        if (!oldGroup.equalsIgnoreCase(newGroup))
-                            storageStrategy.getPermissionService().removeMember(oldGroup, uuid);
-        
-                        announce(rankUp ? "promote" : "demote", scope, "%s %s %s from %s to %s", sender.getName(),
-                                (rankUp ? "promoted" : "demoted"),
-                                playerName,
-                                oldGroup,
-                                newGroup);
-                        if (scope.isShouldEcho() || verbose)
-                            sendMessage(sender, colorize("{YELLOW}%s {AQUA}%s{YELLOW} from {DARK_GREEN}%s{YELLOW} to {DARK_GREEN}%s"),
-                                    (rankUp ? "Promoting" : "Demoting"),
-                                    playerName,
-                                    oldGroup,
-                                    newGroup);
-                        fireRankEvent(playerName, trackMetaData.getTrackName(), oldGroup, newGroup);
-                    }
-                    
-                    return false;
-                }
-            }
-        });
-        
-        core.invalidateMetadataCache(playerName, uuid, false);
-        core.refreshPlayer(uuid, RefreshCause.GROUP_CHANGE);
-        core.refreshExpirations(uuid);
-    }
+	@Command("permissions")
+	@Require({"zpermissions.player.view", "zpermissions.player.manage", "zpermissions.player.chat",
+		"zpermissions.group.view", "zpermissions.group.manage", "zpermissions.group.chat",
+		"zpermissions.list", "zpermissions.check", "zpermissions.reload", "zpermissions.import", "zpermissions.export", "zpermissions.inspect",
+		"zpermissions.mygroups", "zpermissions.purge", "zpermissions.diff", "zpermissions.mychat"})
+	public Object perm(HelpBuilder helpBuilder, CommandSender sender, String[] args) {
+		if (args.length == 0) {
+			helpBuilder.withCommandSender(sender)
+			.withHandler(sc)
+			.forCommand("player")
+			.forCommand("group")
+			.forCommand("list")
+			.forCommand("check")
+			.forCommand("inspect")
+			.forCommand("diff")
+			.forCommand("mygroups")
+			.forCommand("prefix")
+			.forCommand("suffix")
+			.forCommand("reload")
+			.forCommand("import")
+			.forCommand("export")
+			.forCommand("refresh")
+			.show();
+			abortBatchProcessing();
+			return null;
+		}
+		return sc;
+	}
 
-    private BroadcastScope determineScope(boolean quiet, boolean loud) {
-        if (!(quiet || loud))
-            return BroadcastScope.DEFAULT;
-        else if (quiet && loud)
-            return BroadcastScope.QUIET_LOUD;
-        else if (quiet)
-            return BroadcastScope.QUIET;
-        else
-            return BroadcastScope.LOUD;
-    }
+	// Audit record of change. If quiet, only log to server log rather than
+	// broadcasting to admins.
+	private void announce(String notifyNode, BroadcastScope scope, String format, Object... args) {
+		if (scope == BroadcastScope.DEFAULT) {
+			if (config.isRankAdminBroadcast()) {
+				ToHMessageUtils.broadcastAdmin(plugin, format, args);
+			}
+			else {
+				ToHMessageUtils.broadcast(plugin, "zpermissions.notify." + notifyNode, format, args);
+				ToHLoggingUtils.log(plugin, format, args); // ensure it also goes to log
+			}
+		}
+		else if (scope == BroadcastScope.QUIET)
+			ToHLoggingUtils.log(plugin, format, args);
+		else
+			ToHMessageUtils.broadcastMessage(plugin, format, args);
+	}
 
-    @Command("promote")
-    @Require("zpermissions.promote")
-    public void promote(CommandSender sender, @Option("-q") boolean quiet, @Option("-Q") boolean loud, @Option("-v") boolean verbose, @Option(value="player", completer="player") String playerName, @Option(value="track", optional=true, completer="track") String trackName) {
-        rankChange(sender, playerName, trackName, true, determineScope(quiet, loud), verbose);
-    }
+	private void rankChange(final CommandSender sender, final String playerName, final String trackName, final boolean rankUp, final BroadcastScope scope, final boolean verbose) {
+		commandUuidResolver.resolveUsername(sender, playerName, false, new CommandUuidResolverHandler() {
+			public void process(CommandSender sender, String name, UUID uuid, boolean group) {
+				rankChange(sender, uuid, name, trackName, rankUp, scope, verbose);
+			}
+		});
+	}
 
-    @Command("demote")
-    @Require("zpermissions.demote")
-    public void demote(CommandSender sender, @Option("-q") boolean quiet, @Option("-Q") boolean loud, @Option("-v") boolean verbose,  @Option(value="player", completer="player") String playerName, @Option(value="track", optional=true, completer="track") String trackName) {
-        rankChange(sender, playerName, trackName, false, determineScope(quiet, loud), verbose);
-    }
+	// Perform the actual promotion/demotion
+	private void rankChange(final CommandSender sender, final UUID uuid, final String playerName, String trackName, final boolean rankUp, final BroadcastScope scope, final boolean verbose) {
+		// Resolve track
+		final TrackMetaData trackMetaData = getTrack(sender, rankUp ? "promote" : "demote", trackName);
+		if (trackMetaData == null)
+			return;
+		final List<String> track = trackMetaData.getTrack();
 
-    private void rankSet(final CommandSender sender, final String playerName, final String trackName, final String rankName, final BroadcastScope scope, final boolean verbose) {
-        commandUuidResolver.resolveUsername(sender, playerName, false, new CommandUuidResolverHandler() {
-            @Override
-            public void process(CommandSender sender, String name, UUID uuid, boolean group) {
-                rankSet(sender, uuid, name, trackName, rankName, scope, verbose);
-            }
-        });
-    }
+		// Do everything in one ginormous transaction.
+		storageStrategy.getTransactionStrategy().execute(new TransactionCallback<Boolean>() {
+			public Boolean doInTransaction() throws Exception {
+				Set<String> playerGroupNames = new HashSet<String>();
+				playerGroupNames.addAll(Utils.toGroupNames(Utils.filterExpired(storageStrategy.getPermissionService().getGroups(uuid))));
+				if (playerGroupNames.isEmpty())
+					playerGroupNames.add(resolver.getDefaultGroup());
 
-    // Set rank to a specified rank on a track
-    private void rankSet(final CommandSender sender, final UUID uuid, final String playerName, String trackName, final String rankName, final BroadcastScope scope, final boolean verbose) {
-        // Resolve track
-        final TrackMetaData trackMetaData = getTrack(sender, rankName == null ? "unsetrank" : "setrank", trackName);
-        if (trackMetaData == null)
-            return;
-        final List<String> track = trackMetaData.getTrack();
+				// Determine what groups the player and the track have in common
+				playerGroupNames = getCommonGroups(playerGroupNames, track);
 
-        if (rankName != null) {
-            boolean found = false;
-            for (String rank : track) {
-                if (rank.equalsIgnoreCase(rankName)) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                sendMessage(sender, colorize("{RED}Rank is not in the track."));
-                abortBatchProcessing();
-                return;
-            }
-        }
+				if (playerGroupNames.size() > 1) {
+					// Hmm, player is member of 2 or more groups in track. Don't know
+					// what to do, so abort.
+					sendMessage(sender, colorize("{RED}Player is in more than one group in that track: {DARK_GREEN}%s"), delimitedString(", ", playerGroupNames));
+					abortBatchProcessing();
+					return false;
+				}
+				else if (playerGroupNames.isEmpty()) {
+					// Player not in any group. Only valid for rankUp
+					if (rankUp) {
+						String group = track.get(0);
+						try {
+							storageStrategy.getPermissionService().addMember(group, uuid, playerName, null);
+						}
+						catch (MissingGroupException e) {
+							sendMessage(sender, colorize("{RED}Group {DARK_GREEN}%s{RED} does not exist."), e.getGroupName());
+							abortBatchProcessing();
+							return false;
+						}
+						announce("promote", scope, "%s added %s to %s", sender.getName(), playerName, group);
+						if (scope.isShouldEcho() || verbose)
+							sendMessage(sender, colorize("{YELLOW}Adding {AQUA}%s{YELLOW} to {DARK_GREEN}%s"), playerName, group);
+						fireRankEvent(playerName, trackMetaData.getTrackName(), null, group);
+					}
+					else {
+						sendMessage(sender, colorize("{RED}Player is not in any groups in that track."));
+						abortBatchProcessing();
+					}
+					return true;
+				}
+				else {
+					String oldGroup = playerGroupNames.iterator().next();
+					int rankIndex = track.indexOf(oldGroup);
+					assertFalse(rankIndex < 0); // should never happen...
 
-        // Do everything in one ginormous transaction.
-        storageStrategy.getTransactionStrategy().execute(new TransactionCallback<Boolean>() {
-            @Override
-            public Boolean doInTransaction() throws Exception {
-                Set<String> playerGroupNames = new HashSet<>();
-                playerGroupNames.addAll(Utils.toGroupNames(Utils.filterExpired(storageStrategy.getPermissionService().getGroups(uuid))));
-                if (playerGroupNames.isEmpty())
-                    playerGroupNames.add(resolver.getDefaultGroup());
-        
-                // Determine what groups the player and the track have in common
-                playerGroupNames = getCommonGroups(playerGroupNames, track);
-                
-                if (playerGroupNames.size() > 1) {
-                    // Hmm, player is member of 2 or more groups in track. Don't know
-                    // what to do, so abort.
-                    sendMessage(sender, colorize("{RED}Player is in more than one group in that track: {DARK_GREEN}%s"), delimitedString(", ", playerGroupNames));
-                    abortBatchProcessing();
-                    return false;
-                }
-                else if (playerGroupNames.isEmpty()) {
-                    if (rankName != null) {
-                        // Not in any groups, just add to new group.
-                        try {
-                            storageStrategy.getPermissionService().addMember(rankName, uuid, playerName, null);
-                        }
-                        catch (MissingGroupException e) {
-                            sendMessage(sender, colorize("{RED}Group {DARK_GREEN}%s{RED} does not exist."), e.getGroupName());
-                            abortBatchProcessing();
-                            return false;
-                        }
-                        announce("setrank", scope, "%s added %s to %s", sender.getName(), playerName, rankName);
-                        if (scope.isShouldEcho() || verbose)
-                            sendMessage(sender, colorize("{YELLOW}Adding {AQUA}%s{YELLOW} to {DARK_GREEN}%s"), playerName, rankName);
-                        fireRankEvent(playerName, trackMetaData.getTrackName(), null, rankName);
-                    }
-                    else {
-                        sendMessage(sender, colorize("{RED}Player is not in any groups in that track."));
-                        abortBatchProcessing();
-                    }
-                    return true;
-                }
-                else {
-                    // Name of current (old) group
-                    String oldGroup = playerGroupNames.iterator().next();
+					// Rank up or down
+					rankIndex += rankUp ? 1 : -1;
 
-                    if (rankName != null) {
-                        // Add to new group
-                        try {
-                            storageStrategy.getPermissionService().addMember(rankName, uuid, playerName, null);
-                        }
-                        catch (MissingGroupException e) {
-                            sendMessage(sender, colorize("{RED}Group {DARK_GREEN}%s{RED} does not exist."), e.getGroupName());
-                            abortBatchProcessing();
-                            return false;
-                        }
+					// If now ranked below first rank, remove altogether
+					if (rankIndex < 0) {
+						storageStrategy.getPermissionService().removeMember(oldGroup, uuid);
+						announce(rankUp ? "promote" : "demote", scope, "%s removed %s from %s", sender.getName(), playerName, oldGroup);
+						if (scope.isShouldEcho() || verbose)
+							sendMessage(sender, colorize("{YELLOW}Removing {AQUA}%s{YELLOW} from {DARK_GREEN}%s"), playerName, oldGroup);
+						fireRankEvent(playerName, trackMetaData.getTrackName(), oldGroup, null);
+					}
+					else {
+						// Constrain rank to [1..track.size() - 1]
+						if (rankIndex >= track.size()) rankIndex = track.size() - 1;
 
-                        // Remove from old group
-                        if (!oldGroup.equalsIgnoreCase(rankName))
-                            storageStrategy.getPermissionService().removeMember(oldGroup, uuid);
+						String newGroup = track.get(rankIndex);
 
-                        announce("setrank", scope, "%s changed rank of %s from %s to %s", sender.getName(),
-                                playerName,
-                                oldGroup,
-                                rankName);
-                        if (scope.isShouldEcho() || verbose)
-                            sendMessage(sender, colorize("{YELLOW}Changing rank of {AQUA}%s{YELLOW} from {DARK_GREEN}%s{YELLOW} to {DARK_GREEN}%s"),
-                                    playerName,
-                                    oldGroup,
-                                    rankName);
-                        fireRankEvent(playerName, trackMetaData.getTrackName(), oldGroup, rankName);
-                    }
-                    else {
-                        // Remove from old group
-                        storageStrategy.getPermissionService().removeMember(oldGroup, uuid);
+						// Change groups
+						try {
+							storageStrategy.getPermissionService().addMember(newGroup, uuid, playerName, null);
+						}
+						catch (MissingGroupException e) {
+							sendMessage(sender, colorize("{RED}Group {DARK_GREEN}%s{RED} does not exist."), e.getGroupName());
+							abortBatchProcessing();
+							return false;
+						}
+						if (!oldGroup.equalsIgnoreCase(newGroup))
+							storageStrategy.getPermissionService().removeMember(oldGroup, uuid);
 
-                        announce("unsetrank", scope, "%s removed %s from %s", sender.getName(), playerName, oldGroup);
-                        if (scope.isShouldEcho() || verbose)
-                            sendMessage(sender, colorize("{YELLOW}Removing {AQUA}%s{YELLOW} from {DARK_GREEN}%s"), playerName, oldGroup);
-                        fireRankEvent(playerName, trackMetaData.getTrackName(), oldGroup, null);
-                    }
-                    return false;
-                }
-            }
-        });
+						announce(rankUp ? "promote" : "demote", scope, "%s %s %s from %s to %s", sender.getName(),
+								(rankUp ? "promoted" : "demoted"),
+								playerName,
+								oldGroup,
+								newGroup);
+						if (scope.isShouldEcho() || verbose)
+							sendMessage(sender, colorize("{YELLOW}%s {AQUA}%s{YELLOW} from {DARK_GREEN}%s{YELLOW} to {DARK_GREEN}%s"),
+									(rankUp ? "Promoting" : "Demoting"),
+									playerName,
+									oldGroup,
+									newGroup);
+						fireRankEvent(playerName, trackMetaData.getTrackName(), oldGroup, newGroup);
+					}
 
-        core.invalidateMetadataCache(playerName, uuid, false);
-        core.refreshPlayer(uuid, RefreshCause.GROUP_CHANGE);
-        core.refreshExpirations(uuid);
-    }
+					return false;
+				}
+			}
+		});
 
-    @Command("setrank")
-    @Require("zpermissions.setrank")
-    public void setrank(CommandSender sender, @Option("-q") boolean quiet, @Option("-Q") boolean loud, @Option("-v") boolean verbose, @Option(value="player", completer="player") String playerName, @Option("rank") String rankName, @Option(value="track", optional=true, completer="track") String trackName) {
-        rankSet(sender, playerName, trackName, rankName, determineScope(quiet, loud), verbose);
-    }
+		core.invalidateMetadataCache(playerName, uuid, false);
+		core.refreshPlayer(uuid, RefreshCause.GROUP_CHANGE);
+		core.refreshExpirations(uuid);
+	}
 
-    @Command("unsetrank")
-    @Require("zpermissions.unsetrank")
-    public void unsetrank(CommandSender sender, @Option("-q") boolean quiet, @Option("-Q") boolean loud, @Option("-v") boolean verbose, @Option(value="player", completer="player") String playerName, @Option(value="track", optional=true, completer="track") String trackName) {
-        rankSet(sender, playerName, trackName, null, determineScope(quiet, loud), verbose);
-    }
+	private BroadcastScope determineScope(boolean quiet, boolean loud) {
+		if (!(quiet || loud))
+			return BroadcastScope.DEFAULT;
+		else if (quiet && loud)
+			return BroadcastScope.QUIET_LOUD;
+		else if (quiet)
+			return BroadcastScope.QUIET;
+		else
+			return BroadcastScope.LOUD;
+	}
 
-    // Returns names of tracks this permissible has access to
-    private Set<String> getAvailableTracks(CommandSender sender, String command) {
-        final String prefix = "zpermissions." + command + ".";
-        Set<String> result = new HashSet<>();
-        for (String track : config.getTracks()) {
-            boolean found = false;
-            for (String perm : new String[] { prefix + track, prefix + "*", "zpermissions.rank." + track, "zpermissions.rank.*" }) {
-                if (sender.hasPermission(perm)) {
-                    found = true; // continue search (for negations)
-                }
-                else if (sender.isPermissionSet(perm)) {
-                    found = false; // explicit negation
-                    break;
-                }
-            }
-            if (found)
-                result.add(track);
-        }
-        return result;
-    }
+	@Command("promote")
+	@Require("zpermissions.promote")
+	public void promote(CommandSender sender, @Option("-q") boolean quiet, @Option("-Q") boolean loud, @Option("-v") boolean verbose, @Option(value="player", completer="player") String playerName, @Option(value="track", optional=true, completer="track") String trackName) {
+		rankChange(sender, playerName, trackName, true, determineScope(quiet, loud), verbose);
+	}
 
-    // Returns ranks for the specified track, determining default
-    // accordingly. Returns null if invalid.
-    private TrackMetaData getTrack(CommandSender sender, String command, String trackName) {
-        if (!hasText(trackName)) { // Use default track
-            // Figure out what player has access to
-            Set<String> playerTracks = getAvailableTracks(sender, command);
-            if (playerTracks.size() == 1) {
-                // Exactly one choice, use it
-                trackName = playerTracks.iterator().next();
-            }
-            else {
-                // Fall back to configured default
-                trackName = config.getDefaultTrack();
-            }
-            sendMessage(sender, colorize("{GRAY}(Defaulting to track \"%s\")"), trackName);
-        }
-        
-        final List<String> track = config.getTrack(trackName);
-        if (track == null || track.isEmpty()) {
-            sendMessage(sender, colorize("{RED}Track has not been defined."));
-            abortBatchProcessing();
-            return null;
-        }
+	@Command("demote")
+	@Require("zpermissions.demote")
+	public void demote(CommandSender sender, @Option("-q") boolean quiet, @Option("-Q") boolean loud, @Option("-v") boolean verbose,  @Option(value="player", completer="player") String playerName, @Option(value="track", optional=true, completer="track") String trackName) {
+		rankChange(sender, playerName, trackName, false, determineScope(quiet, loud), verbose);
+	}
 
-        // TODO Permission checked twice in some cases. Any way around it?
-        requireOnePermission(sender, true,
-                String.format("zpermissions.%s.%s", command, trackName),
-                String.format("zpermissions.%s.*", command),
-                String.format("zpermissions.rank.%s", trackName),
-                "zpermissions.rank.*");
+	private void rankSet(final CommandSender sender, final String playerName, final String trackName, final String rankName, final BroadcastScope scope, final boolean verbose) {
+		commandUuidResolver.resolveUsername(sender, playerName, false, new CommandUuidResolverHandler() {
+			public void process(CommandSender sender, String name, UUID uuid, boolean group) {
+				rankSet(sender, uuid, name, trackName, rankName, scope, verbose);
+			}
+		});
+	}
 
-        return new TrackMetaData(track, trackName);
-    }
+	// Set rank to a specified rank on a track
+	private void rankSet(final CommandSender sender, final UUID uuid, final String playerName, String trackName, final String rankName, final BroadcastScope scope, final boolean verbose) {
+		// Resolve track
+		final TrackMetaData trackMetaData = getTrack(sender, rankName == null ? "unsetrank" : "setrank", trackName);
+		if (trackMetaData == null)
+			return;
+		final List<String> track = trackMetaData.getTrack();
 
-    private void fireRankEvent(String playerName, String track, String fromGroup, String toGroup) {
-        ZPermissionsRankChangeEvent event = new ZPermissionsRankChangeEvent(playerName, track, fromGroup, toGroup);
-        Bukkit.getPluginManager().callEvent(event);
-    }
+		if (rankName != null) {
+			boolean found = false;
+			for (String rank : track) {
+				if (rank.equalsIgnoreCase(rankName)) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				sendMessage(sender, colorize("{RED}Rank is not in the track."));
+				abortBatchProcessing();
+				return;
+			}
+		}
 
-    private Set<String> getCommonGroups(Collection<String> currentGroups, Collection<String> trackGroups) {
-        Set<String> result = new LinkedHashSet<>(currentGroups.size());
-        // Lowercase all group names
-        for (String group : currentGroups) {
-            result.add(group.toLowerCase());
-        }
-        result.retainAll(trackGroups);
-        return result;
-    }
+		// Do everything in one ginormous transaction.
+		storageStrategy.getTransactionStrategy().execute(new TransactionCallback<Boolean>() {
+			public Boolean doInTransaction() throws Exception {
+				Set<String> playerGroupNames = new HashSet<String>();
+				playerGroupNames.addAll(Utils.toGroupNames(Utils.filterExpired(storageStrategy.getPermissionService().getGroups(uuid))));
+				if (playerGroupNames.isEmpty())
+					playerGroupNames.add(resolver.getDefaultGroup());
 
-    private static class TrackMetaData {
-        
-        private final List<String> track;
-        
-        private final String trackName;
+				// Determine what groups the player and the track have in common
+				playerGroupNames = getCommonGroups(playerGroupNames, track);
 
-        public TrackMetaData(List<String> track, String trackName) {
-            this.track = track;
-            this.trackName = trackName;
-        }
+				if (playerGroupNames.size() > 1) {
+					// Hmm, player is member of 2 or more groups in track. Don't know
+					// what to do, so abort.
+					sendMessage(sender, colorize("{RED}Player is in more than one group in that track: {DARK_GREEN}%s"), delimitedString(", ", playerGroupNames));
+					abortBatchProcessing();
+					return false;
+				}
+				else if (playerGroupNames.isEmpty()) {
+					if (rankName != null) {
+						// Not in any groups, just add to new group.
+						try {
+							storageStrategy.getPermissionService().addMember(rankName, uuid, playerName, null);
+						}
+						catch (MissingGroupException e) {
+							sendMessage(sender, colorize("{RED}Group {DARK_GREEN}%s{RED} does not exist."), e.getGroupName());
+							abortBatchProcessing();
+							return false;
+						}
+						announce("setrank", scope, "%s added %s to %s", sender.getName(), playerName, rankName);
+						if (scope.isShouldEcho() || verbose)
+							sendMessage(sender, colorize("{YELLOW}Adding {AQUA}%s{YELLOW} to {DARK_GREEN}%s"), playerName, rankName);
+						fireRankEvent(playerName, trackMetaData.getTrackName(), null, rankName);
+					}
+					else {
+						sendMessage(sender, colorize("{RED}Player is not in any groups in that track."));
+						abortBatchProcessing();
+					}
+					return true;
+				}
+				else {
+					// Name of current (old) group
+					String oldGroup = playerGroupNames.iterator().next();
 
-        public List<String> getTrack() {
-            return track;
-        }
+					if (rankName != null) {
+						// Add to new group
+						try {
+							storageStrategy.getPermissionService().addMember(rankName, uuid, playerName, null);
+						}
+						catch (MissingGroupException e) {
+							sendMessage(sender, colorize("{RED}Group {DARK_GREEN}%s{RED} does not exist."), e.getGroupName());
+							abortBatchProcessing();
+							return false;
+						}
 
-        public String getTrackName() {
-            return trackName;
-        }
-        
-    }
+						// Remove from old group
+						if (!oldGroup.equalsIgnoreCase(rankName))
+							storageStrategy.getPermissionService().removeMember(oldGroup, uuid);
+
+						announce("setrank", scope, "%s changed rank of %s from %s to %s", sender.getName(),
+								playerName,
+								oldGroup,
+								rankName);
+						if (scope.isShouldEcho() || verbose)
+							sendMessage(sender, colorize("{YELLOW}Changing rank of {AQUA}%s{YELLOW} from {DARK_GREEN}%s{YELLOW} to {DARK_GREEN}%s"),
+									playerName,
+									oldGroup,
+									rankName);
+						fireRankEvent(playerName, trackMetaData.getTrackName(), oldGroup, rankName);
+					}
+					else {
+						// Remove from old group
+						storageStrategy.getPermissionService().removeMember(oldGroup, uuid);
+
+						announce("unsetrank", scope, "%s removed %s from %s", sender.getName(), playerName, oldGroup);
+						if (scope.isShouldEcho() || verbose)
+							sendMessage(sender, colorize("{YELLOW}Removing {AQUA}%s{YELLOW} from {DARK_GREEN}%s"), playerName, oldGroup);
+						fireRankEvent(playerName, trackMetaData.getTrackName(), oldGroup, null);
+					}
+					return false;
+				}
+			}
+		});
+
+		core.invalidateMetadataCache(playerName, uuid, false);
+		core.refreshPlayer(uuid, RefreshCause.GROUP_CHANGE);
+		core.refreshExpirations(uuid);
+	}
+
+	@Command("setrank")
+	@Require("zpermissions.setrank")
+	public void setrank(CommandSender sender, @Option("-q") boolean quiet, @Option("-Q") boolean loud, @Option("-v") boolean verbose, @Option(value="player", completer="player") String playerName, @Option("rank") String rankName, @Option(value="track", optional=true, completer="track") String trackName) {
+		rankSet(sender, playerName, trackName, rankName, determineScope(quiet, loud), verbose);
+	}
+
+	@Command("unsetrank")
+	@Require("zpermissions.unsetrank")
+	public void unsetrank(CommandSender sender, @Option("-q") boolean quiet, @Option("-Q") boolean loud, @Option("-v") boolean verbose, @Option(value="player", completer="player") String playerName, @Option(value="track", optional=true, completer="track") String trackName) {
+		rankSet(sender, playerName, trackName, null, determineScope(quiet, loud), verbose);
+	}
+
+	// Returns names of tracks this permissible has access to
+	private Set<String> getAvailableTracks(CommandSender sender, String command) {
+		final String prefix = "zpermissions." + command + ".";
+		Set<String> result = new HashSet<String>();
+		for (String track : config.getTracks()) {
+			boolean found = false;
+			for (String perm : new String[] { prefix + track, prefix + "*", "zpermissions.rank." + track, "zpermissions.rank.*" }) {
+				if (sender.hasPermission(perm)) {
+					found = true; // continue search (for negations)
+				}
+				else if (sender.isPermissionSet(perm)) {
+					found = false; // explicit negation
+					break;
+				}
+			}
+			if (found)
+				result.add(track);
+		}
+		return result;
+	}
+
+	// Returns ranks for the specified track, determining default
+	// accordingly. Returns null if invalid.
+	private TrackMetaData getTrack(CommandSender sender, String command, String trackName) {
+		if (!hasText(trackName)) { // Use default track
+			// Figure out what player has access to
+			Set<String> playerTracks = getAvailableTracks(sender, command);
+			if (playerTracks.size() == 1) {
+				// Exactly one choice, use it
+				trackName = playerTracks.iterator().next();
+			}
+			else {
+				// Fall back to configured default
+				trackName = config.getDefaultTrack();
+			}
+			sendMessage(sender, colorize("{GRAY}(Defaulting to track \"%s\")"), trackName);
+		}
+
+		final List<String> track = config.getTrack(trackName);
+		if (track == null || track.isEmpty()) {
+			sendMessage(sender, colorize("{RED}Track has not been defined."));
+			abortBatchProcessing();
+			return null;
+		}
+
+		// TODO Permission checked twice in some cases. Any way around it?
+		requireOnePermission(sender, true,
+				String.format("zpermissions.%s.%s", command, trackName),
+				String.format("zpermissions.%s.*", command),
+				String.format("zpermissions.rank.%s", trackName),
+				"zpermissions.rank.*");
+
+		return new TrackMetaData(track, trackName);
+	}
+
+	private void fireRankEvent(String playerName, String track, String fromGroup, String toGroup) {
+		ZPermissionsRankChangeEvent event = new ZPermissionsRankChangeEvent(playerName, track, fromGroup, toGroup);
+		Bukkit.getPluginManager().callEvent(event);
+	}
+
+	private Set<String> getCommonGroups(Collection<String> currentGroups, Collection<String> trackGroups) {
+		Set<String> result = new LinkedHashSet<String>(currentGroups.size());
+		// Lowercase all group names
+		for (String group : currentGroups) {
+			result.add(group.toLowerCase());
+		}
+		result.retainAll(trackGroups);
+		return result;
+	}
+
+	private static class TrackMetaData {
+
+		private final List<String> track;
+
+		private final String trackName;
+
+		public TrackMetaData(List<String> track, String trackName) {
+			this.track = track;
+			this.trackName = trackName;
+		}
+
+		public List<String> getTrack() {
+			return track;
+		}
+
+		public String getTrackName() {
+			return trackName;
+		}
+
+	}
 
 }

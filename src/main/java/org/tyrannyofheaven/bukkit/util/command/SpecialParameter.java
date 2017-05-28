@@ -23,64 +23,64 @@ package org.tyrannyofheaven.bukkit.util.command;
  */
 final class SpecialParameter implements MethodParameter {
 
-    private final Type type;
-    
-    /**
-     * Create a SpecialParameter instance.
-     * 
-     * @param type the special type of parameter
-     */
-    SpecialParameter(Type type) {
-        if (type == null)
-            throw new IllegalArgumentException("type cannot be null");
+	private final Type type;
 
-        this.type = type;
-    }
+	/**
+	 * Create a SpecialParameter instance.
+	 * 
+	 * @param type the special type of parameter
+	 */
+	SpecialParameter(Type type) {
+		if (type == null)
+			throw new IllegalArgumentException("type cannot be null");
 
-    /**
-     * Retrieve the SpecialParameter type.
-     * 
-     * @return the type
-     */
-    Type getType() {
-        return type;
-    }
+		this.type = type;
+	}
 
-    enum Type {
-        /**
-         * org.bukkit.Server
-         */
-        SERVER,
-        
-        /**
-         * org.bukkit.plugin.Plugin or subclasses
-         */
-        PLUGIN,
-        
-        /**
-         * org.bukkit.plugin.CommandSender
-         */
-        COMMAND_SENDER,
+	/**
+	 * Retrieve the SpecialParameter type.
+	 * 
+	 * @return the type
+	 */
+	Type getType() {
+		return type;
+	}
 
-        /**
-         * Unannotated String parameter
-         */
-        LABEL,
+	enum Type {
+		/**
+		 * org.bukkit.Server
+		 */
+		SERVER,
 
-        /**
-         * UsageBuilder
-         */
-        USAGE_BUILDER,
+		/**
+		 * org.bukkit.plugin.Plugin or subclasses
+		 */
+		PLUGIN,
 
-        /**
-         * Session
-         */
-        SESSION,
+		/**
+		 * org.bukkit.plugin.CommandSender
+		 */
+		COMMAND_SENDER,
 
-        /**
-         * String[] parameter
-         */
-        REST;
-    }
+		/**
+		 * Unannotated String parameter
+		 */
+		LABEL,
+
+		/**
+		 * UsageBuilder
+		 */
+		USAGE_BUILDER,
+
+		/**
+		 * Session
+		 */
+		SESSION,
+
+		/**
+		 * String[] parameter
+		 */
+		REST;
+	}
 
 }

@@ -30,121 +30,121 @@ import org.bukkit.permissions.Permissible;
  */
 final class InvocationChain {
 
-    private final List<CommandInvocation> chain;
+	private final List<CommandInvocation> chain;
 
-    private InvocationChain(List<CommandInvocation> chain) {
-        this.chain = chain;
-    }
+	private InvocationChain(List<CommandInvocation> chain) {
+		this.chain = chain;
+	}
 
-    InvocationChain() {
-        this(new LinkedList<CommandInvocation>());
-    }
+	InvocationChain() {
+		this(new LinkedList<CommandInvocation>());
+	}
 
-    // Adds a new invocation to the chain
-    void addInvocation(String label, CommandMetaData commandMetaData) {
-        chain.add(new CommandInvocation(label, commandMetaData));
-    }
+	// Adds a new invocation to the chain
+	void addInvocation(String label, CommandMetaData commandMetaData) {
+		chain.add(new CommandInvocation(label, commandMetaData));
+	}
 
-    // Generate a usage string
-    String getUsageString(UsageOptions usageOptions) {
-        return getUsageString(usageOptions, false);
-    }
+	// Generate a usage string
+	String getUsageString(UsageOptions usageOptions) {
+		return getUsageString(usageOptions, false);
+	}
 
-    // Generate a usage string
-    String getUsageString(UsageOptions usageOptions, boolean withDescription) {
-        boolean first = true;
-        
-        StringBuilder usage = new StringBuilder();
-        usage.append(usageOptions.getPreamble());
-        for (Iterator<CommandInvocation> i = chain.iterator(); i.hasNext();) {
-            CommandInvocation ci = i.next();
-            if (first) {
-                usage.append('/');
-                first = false;
-            }
-            usage.append(ci.getLabel());
-            
-            CommandMetaData cmd = ci.getCommandMetaData();
-            if (!cmd.getFlagOptions().isEmpty() || !cmd.getPositionalArguments().isEmpty()) {
-                usage.append(' ');
-                
-                for (Iterator<OptionMetaData> j = cmd.getFlagOptions().iterator(); j.hasNext();) {
-                    OptionMetaData omd = j.next();
-                    usage.append(usageOptions.getFlagStart());
-                    usage.append(omd.getName());
-                    if (omd.getType() != Boolean.class && omd.getType() != Boolean.TYPE) {
-                        // Show a value
-                        usage.append(usageOptions.getFlagValueStart());
-                        usage.append(omd.getValueName());
-                        usage.append(usageOptions.getFlagValueEnd());
-                    }
-                    usage.append(usageOptions.getFlagEnd());
-                    if (j.hasNext())
-                        usage.append(' ');
-                }
-                
-                if (!cmd.getFlagOptions().isEmpty() && !cmd.getPositionalArguments().isEmpty())
-                    usage.append(' ');
+	// Generate a usage string
+	String getUsageString(UsageOptions usageOptions, boolean withDescription) {
+		boolean first = true;
 
-                for (Iterator<OptionMetaData> j = cmd.getPositionalArguments().iterator(); j.hasNext();) {
-                    OptionMetaData omd = j.next();
-                    usage.append(usageOptions.getParameterStart(omd.isOptional()));
-                    usage.append(omd.getName());
-                    usage.append(usageOptions.getParameterEnd(omd.isOptional()));
-                    if (j.hasNext())
-                        usage.append(' ');
-                }
-            }
-            
-            // Add varargs description, if any
-            if (cmd.getRest() != null) {
-                usage.append(usageOptions.getVarargsStart());
-                usage.append(cmd.getRest());
-                usage.append(usageOptions.getVarargsEnd());
-            }
+		StringBuilder usage = new StringBuilder();
+		usage.append(usageOptions.getPreamble());
+		for (Iterator<CommandInvocation> i = chain.iterator(); i.hasNext();) {
+			CommandInvocation ci = i.next();
+			if (first) {
+				usage.append('/');
+				first = false;
+			}
+			usage.append(ci.getLabel());
 
-            if (i.hasNext())
-                usage.append(' ');
-        }
+			CommandMetaData cmd = ci.getCommandMetaData();
+			if (!cmd.getFlagOptions().isEmpty() || !cmd.getPositionalArguments().isEmpty()) {
+				usage.append(' ');
 
-        // Attach description
-        if (withDescription && !chain.isEmpty()) {
-            // Pull out last CommandMetaData
-            CommandMetaData cmd = chain.get(chain.size() - 1).getCommandMetaData();
-            if (cmd.getDescription() != null) {
-                usage.append(usageOptions.getDescriptionDelimiter());
-                usage.append(cmd.getDescription());
-            }
-        }
-        
-        usage.append(usageOptions.getPostamble());
+				for (Iterator<OptionMetaData> j = cmd.getFlagOptions().iterator(); j.hasNext();) {
+					OptionMetaData omd = j.next();
+					usage.append(usageOptions.getFlagStart());
+					usage.append(omd.getName());
+					if (omd.getType() != Boolean.class && omd.getType() != Boolean.TYPE) {
+						// Show a value
+						usage.append(usageOptions.getFlagValueStart());
+						usage.append(omd.getValueName());
+						usage.append(usageOptions.getFlagValueEnd());
+					}
+					usage.append(usageOptions.getFlagEnd());
+					if (j.hasNext())
+						usage.append(' ');
+				}
 
-        return usage.toString();
-    }
+				if (!cmd.getFlagOptions().isEmpty() && !cmd.getPositionalArguments().isEmpty())
+					usage.append(' ');
 
-    // Tests whether the given permissible can execute this entire chain
-    boolean canBeExecutedBy(Permissible permissible) {
-        for (CommandInvocation ci : chain) {
-            if (!hasPermissions(permissible, ci.getCommandMetaData().isRequireAll(), ci.getCommandMetaData().isCheckNegations(), ci.getCommandMetaData().getPermissions()))
-                return false;
-        }
-        return true;
-    }
+				for (Iterator<OptionMetaData> j = cmd.getPositionalArguments().iterator(); j.hasNext();) {
+					OptionMetaData omd = j.next();
+					usage.append(usageOptions.getParameterStart(omd.isOptional()));
+					usage.append(omd.getName());
+					usage.append(usageOptions.getParameterEnd(omd.isOptional()));
+					if (j.hasNext())
+						usage.append(' ');
+				}
+			}
 
-    // Returns a copy of this chain
-    InvocationChain copy() {
-        // Feh to clone()
-        return new InvocationChain(new LinkedList<>(chain));
-    }
+			// Add varargs description, if any
+			if (cmd.getRest() != null) {
+				usage.append(usageOptions.getVarargsStart());
+				usage.append(cmd.getRest());
+				usage.append(usageOptions.getVarargsEnd());
+			}
 
-    void pop() {
-        if (chain.isEmpty())
-            throw new IllegalStateException("InvocationChain is empty");
-        chain.remove(chain.size() - 1);
-    }
+			if (i.hasNext())
+				usage.append(' ');
+		}
 
-    boolean isEmpty() {
-        return chain.isEmpty();
-    }
+		// Attach description
+		if (withDescription && !chain.isEmpty()) {
+			// Pull out last CommandMetaData
+			CommandMetaData cmd = chain.get(chain.size() - 1).getCommandMetaData();
+			if (cmd.getDescription() != null) {
+				usage.append(usageOptions.getDescriptionDelimiter());
+				usage.append(cmd.getDescription());
+			}
+		}
+
+		usage.append(usageOptions.getPostamble());
+
+		return usage.toString();
+	}
+
+	// Tests whether the given permissible can execute this entire chain
+	boolean canBeExecutedBy(Permissible permissible) {
+		for (CommandInvocation ci : chain) {
+			if (!hasPermissions(permissible, ci.getCommandMetaData().isRequireAll(), ci.getCommandMetaData().isCheckNegations(), ci.getCommandMetaData().getPermissions()))
+				return false;
+		}
+		return true;
+	}
+
+	// Returns a copy of this chain
+	InvocationChain copy() {
+		// Feh to clone()
+		return new InvocationChain(new LinkedList<CommandInvocation>(chain));
+	}
+
+	void pop() {
+		if (chain.isEmpty())
+			throw new IllegalStateException("InvocationChain is empty");
+		chain.remove(chain.size() - 1);
+	}
+
+	boolean isEmpty() {
+		return chain.isEmpty();
+	}
 
 }

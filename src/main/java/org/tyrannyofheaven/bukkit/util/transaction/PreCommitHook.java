@@ -22,13 +22,13 @@ package org.tyrannyofheaven.bukkit.util.transaction;
  */
 public interface PreCommitHook {
 
-    /**
-     * Callback called immediately before transaction commit. If you want to
-     * abort, throw an exception.
-     * 
-     * @param readOnly the read-only flag for this transaction
-     * @throws Exception an exception signifying that a rollback should be performed
-     */
-    public void preCommit(boolean readOnly) throws Exception;
+	/**
+	 * Callback called immediately before transaction commit. If you want to
+	 * abort, throw an exception.
+	 * 
+	 * @param readOnly the read-only flag for this transaction
+	 * @throws Exception an exception signifying that a rollback should be performed
+	 */
+	public void preCommit(boolean readOnly) throws Exception;
 
 }

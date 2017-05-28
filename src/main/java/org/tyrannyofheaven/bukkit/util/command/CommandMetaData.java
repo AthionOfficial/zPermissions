@@ -30,193 +30,193 @@ import java.util.List;
  */
 final class CommandMetaData {
 
-    private final Object handler;
+	private final Object handler;
 
-    private final Method method;
+	private final Method method;
 
-    private final List<MethodParameter> parameters;
+	private final List<MethodParameter> parameters;
 
-    private final String[] permissions;
+	private final String[] permissions;
 
-    private final boolean requireAll;
+	private final boolean requireAll;
 
-    private final boolean checkNegations;
+	private final boolean checkNegations;
 
-    private final String description;
+	private final String description;
 
-    private final boolean hasRest;
+	private final boolean hasRest;
 
-    private final String rest;
+	private final String rest;
 
-    private final String completer;
+	private final String completer;
 
-    private final List<OptionMetaData> flagOptions;
-    
-    private final List<OptionMetaData> positionalArguments;
+	private final List<OptionMetaData> flagOptions;
 
-    /**
-     * Create a CommandMetaData with the given arguments.
-     * 
-     * @param handler the handler object
-     * @param method the associated method in the handler object
-     * @param options method parameters
-     * @param permissions required permissions, if any
-     * @param requireAll true if all permissions are required
-     */
-    public CommandMetaData(Object handler, Method method, List<MethodParameter> options, String[] permissions, boolean requireAll, boolean checkNegations, String description, boolean hasRest, String rest, String completer) {
-        if (handler == null)
-            throw new IllegalArgumentException("handler cannot be null");
-        if (method == null)
-            throw new IllegalArgumentException("method cannot be null");
-        
-        if (options == null)
-            options = Collections.emptyList();
-        if (permissions == null)
-            permissions = new String[0];
-        if (!hasText(description))
-            description = null;
-        if (!hasText(rest))
-            rest = null;
-        if (!hasText(completer))
-            completer = null;
+	private final List<OptionMetaData> positionalArguments;
 
-        this.handler = handler;
-        this.method = method;
-        this.permissions = Arrays.copyOf(permissions, permissions.length);
-        this.requireAll = requireAll;
-        this.checkNegations = checkNegations;
-        this.description = description;
-        this.hasRest = hasRest;
-        this.rest = rest;
-        this.completer = completer;
+	/**
+	 * Create a CommandMetaData with the given arguments.
+	 * 
+	 * @param handler the handler object
+	 * @param method the associated method in the handler object
+	 * @param options method parameters
+	 * @param permissions required permissions, if any
+	 * @param requireAll true if all permissions are required
+	 */
+	public CommandMetaData(Object handler, Method method, List<MethodParameter> options, String[] permissions, boolean requireAll, boolean checkNegations, String description, boolean hasRest, String rest, String completer) {
+		if (handler == null)
+			throw new IllegalArgumentException("handler cannot be null");
+		if (method == null)
+			throw new IllegalArgumentException("method cannot be null");
 
-        this.parameters = Collections.unmodifiableList(new ArrayList<>(options));
-        
-        List<OptionMetaData> flagOptions = new ArrayList<>();
-        List<OptionMetaData> positionalArguments = new ArrayList<>();
-        for (MethodParameter mp : this.parameters) {
-            if (mp instanceof OptionMetaData) {
-                OptionMetaData omd = (OptionMetaData)mp;
-                if (omd.isArgument()) {
-                    positionalArguments.add(omd);
-                }
-                else {
-                    flagOptions.add(omd);
-                }
-            }
-        }
-        
-        this.flagOptions = Collections.unmodifiableList(flagOptions);
-        this.positionalArguments = Collections.unmodifiableList(positionalArguments);
-    }
+		if (options == null)
+			options = Collections.emptyList();
+		if (permissions == null)
+			permissions = new String[0];
+		if (!hasText(description))
+			description = null;
+		if (!hasText(rest))
+			rest = null;
+		if (!hasText(completer))
+			completer = null;
 
-    /**
-     * Return the method parameter metadata.
-     * 
-     * @return list of MethodParameters
-     */
-    public List<MethodParameter> getParameters() {
-        return parameters;
-    }
+		this.handler = handler;
+		this.method = method;
+		this.permissions = Arrays.copyOf(permissions, permissions.length);
+		this.requireAll = requireAll;
+		this.checkNegations = checkNegations;
+		this.description = description;
+		this.hasRest = hasRest;
+		this.rest = rest;
+		this.completer = completer;
 
-    /**
-     * Return metadata for any flags.
-     * 
-     * @return set of OptionMetaData for any associated flags
-     */
-    public List<OptionMetaData> getFlagOptions() {
-        return flagOptions;
-    }
+		this.parameters = Collections.unmodifiableList(new ArrayList<>(options));
 
-    /**
-     * Return metadata for any positional arguments.
-     * 
-     * @return list of OptionMetaData for any positional arguments
-     */
-    public List<OptionMetaData> getPositionalArguments() {
-        return positionalArguments;
-    }
+		List<OptionMetaData> flagOptions = new ArrayList<>();
+		List<OptionMetaData> positionalArguments = new ArrayList<>();
+		for (MethodParameter mp : this.parameters) {
+			if (mp instanceof OptionMetaData) {
+				OptionMetaData omd = (OptionMetaData)mp;
+				if (omd.isArgument()) {
+					positionalArguments.add(omd);
+				}
+				else {
+					flagOptions.add(omd);
+				}
+			}
+		}
 
-    /**
-     * Returns the handler object.
-     * 
-     * @return the handler object
-     */
-    public Object getHandler() {
-        return handler;
-    }
+		this.flagOptions = Collections.unmodifiableList(flagOptions);
+		this.positionalArguments = Collections.unmodifiableList(positionalArguments);
+	}
 
-    /**
-     * Returns the handler method.
-     * 
-     * @return the handler method.
-     */
-    public Method getMethod() {
-        return method;
-    }
+	/**
+	 * Return the method parameter metadata.
+	 * 
+	 * @return list of MethodParameters
+	 */
+	public List<MethodParameter> getParameters() {
+		return parameters;
+	}
 
-    /**
-     * Returns the permissions, if any.
-     * 
-     * @return an array of 0 or more permission names. Will never be
-     *   <code>null</code>.
-     */
-    public String[] getPermissions() {
-        return permissions;
-    }
+	/**
+	 * Return metadata for any flags.
+	 * 
+	 * @return set of OptionMetaData for any associated flags
+	 */
+	public List<OptionMetaData> getFlagOptions() {
+		return flagOptions;
+	}
 
-    /**
-     * Returns whether or not all permissions are required.
-     * 
-     * @return true if all permissions are required
-     */
-    public boolean isRequireAll() {
-        return requireAll;
-    }
+	/**
+	 * Return metadata for any positional arguments.
+	 * 
+	 * @return list of OptionMetaData for any positional arguments
+	 */
+	public List<OptionMetaData> getPositionalArguments() {
+		return positionalArguments;
+	}
 
-    /**
-     * Returns whether or not permission negations should be explicitly checked.
-     * 
-     * @return true if permissions negations should be explicitly checked
-     */
-    public boolean isCheckNegations() {
-        return checkNegations;
-    }
+	/**
+	 * Returns the handler object.
+	 * 
+	 * @return the handler object
+	 */
+	public Object getHandler() {
+		return handler;
+	}
 
-    /**
-     * Returns the associated command description.
-     * 
-     * @return the description
-     */
-    public String getDescription() {
-        return description;
-    }
+	/**
+	 * Returns the handler method.
+	 * 
+	 * @return the handler method.
+	 */
+	public Method getMethod() {
+		return method;
+	}
 
-    /**
-     * Returns whether or not this command has a varargs parameter.
-     * 
-     * @return true if a varargs parameter is present
-     */
-    public boolean hasRest() {
-        return hasRest;
-    }
+	/**
+	 * Returns the permissions, if any.
+	 * 
+	 * @return an array of 0 or more permission names. Will never be
+	 *   <code>null</code>.
+	 */
+	public String[] getPermissions() {
+		return permissions;
+	}
 
-    /**
-     * Returns the description of the varargs parameter.
-     * 
-     * @return the description of the varargs parameter
-     */
-    public String getRest() {
-        return rest;
-    }
+	/**
+	 * Returns whether or not all permissions are required.
+	 * 
+	 * @return true if all permissions are required
+	 */
+	public boolean isRequireAll() {
+		return requireAll;
+	}
 
-    /**
-     * Returns the name of the registered TypeCompleter for each vararg word.
-     * 
-     * @return the TypeCompleter to use for varargs
-     */
-    public String getCompleter() {
-        return completer;
-    }
+	/**
+	 * Returns whether or not permission negations should be explicitly checked.
+	 * 
+	 * @return true if permissions negations should be explicitly checked
+	 */
+	public boolean isCheckNegations() {
+		return checkNegations;
+	}
+
+	/**
+	 * Returns the associated command description.
+	 * 
+	 * @return the description
+	 */
+	public String getDescription() {
+		return description;
+	}
+
+	/**
+	 * Returns whether or not this command has a varargs parameter.
+	 * 
+	 * @return true if a varargs parameter is present
+	 */
+	public boolean hasRest() {
+		return hasRest;
+	}
+
+	/**
+	 * Returns the description of the varargs parameter.
+	 * 
+	 * @return the description of the varargs parameter
+	 */
+	public String getRest() {
+		return rest;
+	}
+
+	/**
+	 * Returns the name of the registered TypeCompleter for each vararg word.
+	 * 
+	 * @return the TypeCompleter to use for varargs
+	 */
+	public String getCompleter() {
+		return completer;
+	}
 
 }

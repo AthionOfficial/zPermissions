@@ -39,83 +39,83 @@ import org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsCore;
  */
 public class ZPermissionsPlayerListener implements Listener {
 
-    private final ZPermissionsCore core;
-    
-    private final Plugin plugin;
+	private final ZPermissionsCore core;
 
-    private final UuidResolver uuidResolver;
+	private final Plugin plugin;
 
-    public ZPermissionsPlayerListener(ZPermissionsCore core, Plugin plugin, UuidResolver uuidResolver) {
-        this.core = core;
-        this.plugin = plugin;
-        this.uuidResolver = uuidResolver;
-    }
+	private final UuidResolver uuidResolver;
 
-    @EventHandler(priority=EventPriority.MONITOR)
-    public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent event) {
-        if (event.getLoginResult() == AsyncPlayerPreLoginEvent.Result.ALLOWED) {
-            // Update display name
-            core.updateDisplayName(event.getUniqueId(), event.getName());
-        }
-    }
+	public ZPermissionsPlayerListener(ZPermissionsCore core, Plugin plugin, UuidResolver uuidResolver) {
+		this.core = core;
+		this.plugin = plugin;
+		this.uuidResolver = uuidResolver;
+	}
 
-    // Do this early for the benefit of anything listening on the same event
-    @EventHandler(priority=EventPriority.LOWEST)
-    public void onPlayerLogin(PlayerLoginEvent event) {
-        debug(plugin, "%s logged in", event.getPlayer().getName());
-        core.setBukkitPermissions(event.getPlayer(), event.getPlayer().getLocation(), true, null);
-        // NB don't bother with expirations until join
-    }
+	@EventHandler(priority=EventPriority.MONITOR)
+	public void onAsyncPlayerPreLogin(AsyncPlayerPreLoginEvent event) {
+		if (event.getLoginResult() == AsyncPlayerPreLoginEvent.Result.ALLOWED) {
+			// Update display name
+			core.updateDisplayName(event.getUniqueId(), event.getName());
+		}
+	}
 
-    @EventHandler(priority=EventPriority.MONITOR)
-    public void onPlayerLoginMonitor(PlayerLoginEvent event) {
-        // If they aren't sticking around...
-        if (event.getResult() != PlayerLoginEvent.Result.ALLOWED) {
-            // Forget about them
-            debug(plugin, "%s is not allowed to log in", event.getPlayer().getName());
-            core.removeBukkitPermissions(event.getPlayer(), false); // They're getting booted, no need to recalc
-        }
-    }
+	// Do this early for the benefit of anything listening on the same event
+	@EventHandler(priority=EventPriority.LOWEST)
+	public void onPlayerLogin(PlayerLoginEvent event) {
+		debug(plugin, "%s logged in", event.getPlayer().getName());
+		core.setBukkitPermissions(event.getPlayer(), event.getPlayer().getLocation(), true, null);
+		// NB don't bother with expirations until join
+	}
 
-    @EventHandler(priority=EventPriority.LOWEST)
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        debug(plugin, "%s joining", event.getPlayer().getName());
-        // NB eventCause is null because it's a given that the player's permissions has changed on join
-        // (ignore the fact that it actually changed on login for now)
-        core.setBukkitPermissions(event.getPlayer(), event.getPlayer().getLocation(), true, null); // Does this need to be forced again?
-        // Wait for next tick...
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-            @Override
-            public void run() {
-                core.refreshExpirations();
-            }
-        });
-    }
+	@EventHandler(priority=EventPriority.MONITOR)
+	public void onPlayerLoginMonitor(PlayerLoginEvent event) {
+		// If they aren't sticking around...
+		if (event.getResult() != PlayerLoginEvent.Result.ALLOWED) {
+			// Forget about them
+			debug(plugin, "%s is not allowed to log in", event.getPlayer().getName());
+			core.removeBukkitPermissions(event.getPlayer(), false); // They're getting booted, no need to recalc
+		}
+	}
 
-    @EventHandler(priority=EventPriority.MONITOR)
-    public void onPlayerJoinMonitor(PlayerJoinEvent event) {
-        // Make default group membership explicit, if configured to do so...
-        core.handleExplicitDefaultGroupMembership(event.getPlayer().getUniqueId(), event.getPlayer().getName());
-    }
+	@EventHandler(priority=EventPriority.LOWEST)
+	public void onPlayerJoin(PlayerJoinEvent event) {
+		debug(plugin, "%s joining", event.getPlayer().getName());
+		// NB eventCause is null because it's a given that the player's permissions has changed on join
+		// (ignore the fact that it actually changed on login for now)
+		core.setBukkitPermissions(event.getPlayer(), event.getPlayer().getLocation(), true, null); // Does this need to be forced again?
+		// Wait for next tick...
+		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
 
-    @EventHandler(priority=EventPriority.MONITOR)
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        debug(plugin, "%s quitting", event.getPlayer().getName());
-        core.removeBukkitPermissions(event.getPlayer(), false); // They're leaving, no need to recalc
-        // Wait for next tick...
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-            @Override
-            public void run() {
-                core.refreshExpirations();
-            }
-        });
-        // Pre-load cache of UuidResolver
-        uuidResolver.preload(event.getPlayer().getName(), event.getPlayer().getUniqueId());
-    }
+			public void run() {
+				core.refreshExpirations();
+			}
+		});
+	}
 
-    @EventHandler(priority=EventPriority.LOWEST)
-    public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
-        core.setBukkitPermissions(event.getPlayer(), event.getPlayer().getLocation(), false, RefreshCause.MOVEMENT);
-    }
+	@EventHandler(priority=EventPriority.MONITOR)
+	public void onPlayerJoinMonitor(PlayerJoinEvent event) {
+		// Make default group membership explicit, if configured to do so...
+		core.handleExplicitDefaultGroupMembership(event.getPlayer().getUniqueId(), event.getPlayer().getName());
+	}
+
+	@EventHandler(priority=EventPriority.MONITOR)
+	public void onPlayerQuit(PlayerQuitEvent event) {
+		debug(plugin, "%s quitting", event.getPlayer().getName());
+		core.removeBukkitPermissions(event.getPlayer(), false); // They're leaving, no need to recalc
+		// Wait for next tick...
+		Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+
+			public void run() {
+				core.refreshExpirations();
+			}
+		});
+		// Pre-load cache of UuidResolver
+		uuidResolver.preload(event.getPlayer().getName(), event.getPlayer().getUniqueId());
+	}
+
+	@EventHandler(priority=EventPriority.LOWEST)
+	public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
+		core.setBukkitPermissions(event.getPlayer(), event.getPlayer().getLocation(), false, RefreshCause.MOVEMENT);
+	}
 
 }

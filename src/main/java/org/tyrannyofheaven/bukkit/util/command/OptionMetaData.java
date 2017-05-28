@@ -26,125 +26,125 @@ import java.util.Arrays;
  */
 final class OptionMetaData implements MethodParameter {
 
-    private static final String DEFAULT_VALUE_NAME = "value";
+	private static final String DEFAULT_VALUE_NAME = "value";
 
-    private final String[] names;
+	private final String[] names;
 
-    private final String valueName;
+	private final String valueName;
 
-    private final Class<?> type;
-    
-    private final boolean optional;
-    
-    private final boolean nullable;
-    
-    private final String completer;
+	private final Class<?> type;
 
-    /**
-     * Create an OptionMetaData.
-     * 
-     * @param names the name of the mapping along with any aliases
-     * @param type the parameter type
-     * @param optional true if optional
-     */
-    public OptionMetaData(String[] names, String valueName, Class<?> type, boolean optional, boolean nullable, String completer) {
-        if (names == null || names.length == 0)
-            throw new IllegalArgumentException("names must be given");
-        if (!hasText(valueName))
-            valueName = DEFAULT_VALUE_NAME;
-        if (type == null)
-            throw new IllegalArgumentException("type cannot be null");
-        if (!hasText(completer))
-            completer = null;
+	private final boolean optional;
 
-        this.names = Arrays.copyOf(names, names.length);
-        this.valueName = valueName;
-        this.type = type;
-        this.optional = optional;
-        this.nullable = nullable;
-        this.completer = completer;
-    }
+	private final boolean nullable;
 
-    /**
-     * Returns the primary name of the option.
-     * 
-     * @return the primary name
-     */
-    public String getName() {
-        return names[0];
-    }
+	private final String completer;
 
-    /**
-     * Returns all names of the option.
-     * 
-     * @return all names of the option
-     */
-    public String[] getNames() {
-        return names;
-    }
+	/**
+	 * Create an OptionMetaData.
+	 * 
+	 * @param names the name of the mapping along with any aliases
+	 * @param type the parameter type
+	 * @param optional true if optional
+	 */
+	public OptionMetaData(String[] names, String valueName, Class<?> type, boolean optional, boolean nullable, String completer) {
+		if (names == null || names.length == 0)
+			throw new IllegalArgumentException("names must be given");
+		if (!hasText(valueName))
+			valueName = DEFAULT_VALUE_NAME;
+		if (type == null)
+			throw new IllegalArgumentException("type cannot be null");
+		if (!hasText(completer))
+			completer = null;
 
-    /**
-     * Returns the name of the value (for the usage string).
-     * 
-     * @return the value name
-     */
-    public String getValueName() {
-        return valueName;
-    }
+		this.names = Arrays.copyOf(names, names.length);
+		this.valueName = valueName;
+		this.type = type;
+		this.optional = optional;
+		this.nullable = nullable;
+		this.completer = completer;
+	}
 
-    /**
-     * Returns the type of the option.
-     * 
-     * @return the type of the option
-     */
-    public Class<?> getType() {
-        return type;
-    }
+	/**
+	 * Returns the primary name of the option.
+	 * 
+	 * @return the primary name
+	 */
+	public String getName() {
+		return names[0];
+	}
 
-    /**
-     * Returns whether or not the option is optional.
-     * 
-     * @return true if optional
-     */
-    public boolean isOptional() {
-        return optional;
-    }
+	/**
+	 * Returns all names of the option.
+	 * 
+	 * @return all names of the option
+	 */
+	public String[] getNames() {
+		return names;
+	}
 
-    /**
-     * Returns whether or not the option is nullable.
-     * 
-     * @return true if nullable
-     */
-    public boolean isNullable() {
-        return nullable;
-    }
+	/**
+	 * Returns the name of the value (for the usage string).
+	 * 
+	 * @return the value name
+	 */
+	public String getValueName() {
+		return valueName;
+	}
 
-    /**
-     * Returns whether or not the option is a flag or a positional parameter.
-     * 
-     * @return true if a positional parameter, false if a flag
-     */
-    public boolean isArgument() {
-        return isArgument(getName());
-    }
+	/**
+	 * Returns the type of the option.
+	 * 
+	 * @return the type of the option
+	 */
+	public Class<?> getType() {
+		return type;
+	}
 
-    /**
-     * Returns whether or not an option with the given name is a flag or a
-     * positional parameter.
-     * 
-     * @return true if a positional parameter, false if a flag
-     */
-    public static boolean isArgument(String name) {
-        return !name.startsWith("-");
-    }
+	/**
+	 * Returns whether or not the option is optional.
+	 * 
+	 * @return true if optional
+	 */
+	public boolean isOptional() {
+		return optional;
+	}
 
-    /**
-     * Returns the name of the associated completer, if any.
-     * 
-     * @return completer name, or null
-     */
-    public String getCompleter() {
-        return completer;
-    }
+	/**
+	 * Returns whether or not the option is nullable.
+	 * 
+	 * @return true if nullable
+	 */
+	public boolean isNullable() {
+		return nullable;
+	}
+
+	/**
+	 * Returns whether or not the option is a flag or a positional parameter.
+	 * 
+	 * @return true if a positional parameter, false if a flag
+	 */
+	public boolean isArgument() {
+		return isArgument(getName());
+	}
+
+	/**
+	 * Returns whether or not an option with the given name is a flag or a
+	 * positional parameter.
+	 * 
+	 * @return true if a positional parameter, false if a flag
+	 */
+	public static boolean isArgument(String name) {
+		return !name.startsWith("-");
+	}
+
+	/**
+	 * Returns the name of the associated completer, if any.
+	 * 
+	 * @return completer name, or null
+	 */
+	public String getCompleter() {
+		return completer;
+	}
 
 }

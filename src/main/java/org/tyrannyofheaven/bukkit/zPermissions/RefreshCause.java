@@ -21,7 +21,7 @@ package org.tyrannyofheaven.bukkit.zPermissions;
  * @author zerothangel
  */
 public enum RefreshCause {
-    COMMAND,
-    GROUP_CHANGE,
-    MOVEMENT;
+	COMMAND,
+	GROUP_CHANGE,
+	MOVEMENT;
 }

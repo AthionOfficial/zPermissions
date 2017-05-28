@@ -26,21 +26,20 @@ import org.tyrannyofheaven.bukkit.zPermissions.dao.PermissionService;
 
 public class GroupTypeCompleter implements TypeCompleter {
 
-    private final PermissionService permissionService;
+	private final PermissionService permissionService;
 
-    public GroupTypeCompleter(PermissionService permissionService) {
-        this.permissionService = permissionService;
-    }
+	public GroupTypeCompleter(PermissionService permissionService) {
+		this.permissionService = permissionService;
+	}
 
-    @Override
-    public List<String> complete(Class<?> clazz, String arg, CommandSender sender, String partial) {
-        if (clazz == String.class) {
-            List<String> result = new ArrayList<>();
-            StringUtil.copyPartialMatches(partial, permissionService.getEntityNames(true), result);
-            Collections.sort(result);
-            return result;
-        }
-        return Collections.emptyList();
-    }
+	public List<String> complete(Class<?> clazz, String arg, CommandSender sender, String partial) {
+		if (clazz == String.class) {
+			List<String> result = new ArrayList<String>();
+			StringUtil.copyPartialMatches(partial, permissionService.getEntityNames(true), result);
+			Collections.sort(result);
+			return result;
+		}
+		return Collections.emptyList();
+	}
 
 }

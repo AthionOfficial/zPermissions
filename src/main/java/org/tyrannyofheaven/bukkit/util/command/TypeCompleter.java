@@ -26,15 +26,15 @@ import org.bukkit.command.CommandSender;
  */
 public interface TypeCompleter {
 
-    /**
-     * Generate possible values for the given parameter type and argument.
-     * 
-     * @param clazz the parameter type
-     * @param arg the argument. May be null.
-     * @param sender TODO
-     * @param partial start of string to match for completion. May be empty, never null.
-     * @return
-     */
-    public List<String> complete(Class<?> clazz, String arg, CommandSender sender, String partial);
+	/**
+	 * Generate possible values for the given parameter type and argument.
+	 * 
+	 * @param clazz the parameter type
+	 * @param arg the argument. May be null.
+	 * @param sender TODO
+	 * @param partial start of string to match for completion. May be empty, never null.
+	 * @return
+	 */
+	public List<String> complete(Class<?> clazz, String arg, CommandSender sender, String partial);
 
 }

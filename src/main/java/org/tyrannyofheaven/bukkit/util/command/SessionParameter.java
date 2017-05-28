@@ -22,31 +22,31 @@ package org.tyrannyofheaven.bukkit.util.command;
  */
 final class SessionParameter implements MethodParameter {
 
-    private final String name;
+	private final String name;
 
-    private final Class<?> type;
+	private final Class<?> type;
 
-    SessionParameter(String name, Class<?> type) {
-        this.name = name;
-        this.type = type;
-    }
+	SessionParameter(String name, Class<?> type) {
+		this.name = name;
+		this.type = type;
+	}
 
-    /**
-     * The name of the CommandSession value.
-     * 
-     * @return the CommandSession value name
-     */
-    String getName() {
-        return name;
-    }
+	/**
+	 * The name of the CommandSession value.
+	 * 
+	 * @return the CommandSession value name
+	 */
+	String getName() {
+		return name;
+	}
 
-    /**
-     * The type of this parameter.
-     * 
-     * @return the parameter type
-     */
-    Class<?> getType() {
-        return type;
-    }
-    
+	/**
+	 * The type of this parameter.
+	 * 
+	 * @return the parameter type
+	 */
+	Class<?> getType() {
+		return type;
+	}
+
 }

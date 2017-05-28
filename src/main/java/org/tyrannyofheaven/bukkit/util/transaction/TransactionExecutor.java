@@ -25,35 +25,34 @@ import java.util.concurrent.Executor;
  */
 class TransactionExecutor implements Executor {
 
-    private final TransactionStrategy transactionStrategy;
+	private final TransactionStrategy transactionStrategy;
 
-    private final ThreadLocal<TransactionRunnable> currentTransactionRunnableHolder = new ThreadLocal<>();
+	private final ThreadLocal<TransactionRunnable> currentTransactionRunnableHolder = new ThreadLocal<TransactionRunnable>();
 
-    public TransactionExecutor(TransactionStrategy transactionStrategy) {
-        this.transactionStrategy = transactionStrategy;
-    }
+	public TransactionExecutor(TransactionStrategy transactionStrategy) {
+		this.transactionStrategy = transactionStrategy;
+	}
 
-    @Override
-    public void execute(Runnable command) {
-        TransactionRunnable currentTransactionRunnable = currentTransactionRunnableHolder.get();
-        if (currentTransactionRunnable == null)
-            throw new IllegalStateException("No current TransactionRunnable");
-        currentTransactionRunnable.addRunnable(command);
-    }
+	public void execute(Runnable command) {
+		TransactionRunnable currentTransactionRunnable = currentTransactionRunnableHolder.get();
+		if (currentTransactionRunnable == null)
+			throw new IllegalStateException("No current TransactionRunnable");
+		currentTransactionRunnable.addRunnable(command);
+	}
 
-    public void begin(boolean readOnly) {
-        TransactionRunnable currentTransactionRunnable = currentTransactionRunnableHolder.get();
-        if (currentTransactionRunnable != null)
-            throw new IllegalStateException("Existing TransactionRunnable found");
-        currentTransactionRunnableHolder.set(new TransactionRunnable(transactionStrategy, readOnly));
-    }
+	public void begin(boolean readOnly) {
+		TransactionRunnable currentTransactionRunnable = currentTransactionRunnableHolder.get();
+		if (currentTransactionRunnable != null)
+			throw new IllegalStateException("Existing TransactionRunnable found");
+		currentTransactionRunnableHolder.set(new TransactionRunnable(transactionStrategy, readOnly));
+	}
 
-    public TransactionRunnable end() {
-        TransactionRunnable currentTransactionRunnable = currentTransactionRunnableHolder.get();
-        if (currentTransactionRunnable == null)
-            throw new IllegalStateException("No current TransactionRunnable");
-        currentTransactionRunnableHolder.remove();
-        return currentTransactionRunnable;
-    }
+	public TransactionRunnable end() {
+		TransactionRunnable currentTransactionRunnable = currentTransactionRunnableHolder.get();
+		if (currentTransactionRunnable == null)
+			throw new IllegalStateException("No current TransactionRunnable");
+		currentTransactionRunnableHolder.remove();
+		return currentTransactionRunnable;
+	}
 
 }

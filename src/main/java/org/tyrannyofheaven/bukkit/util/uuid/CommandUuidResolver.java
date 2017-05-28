@@ -33,155 +33,153 @@ import org.bukkit.plugin.Plugin;
 
 public class CommandUuidResolver {
 
-    private final Plugin plugin;
+	private final Plugin plugin;
 
-    private final UuidResolver uuidResolver;
+	private final UuidResolver uuidResolver;
 
-    private final Executor executor;
+	private final Executor executor;
 
-    private final boolean abortInline;
+	private final boolean abortInline;
 
-    public CommandUuidResolver(Plugin plugin, UuidResolver uuidResolver, Executor executor, boolean abortInline) {
-        this.plugin = plugin;
-        this.uuidResolver = uuidResolver;
-        this.executor = executor;
-        this.abortInline = abortInline;
-    }
+	public CommandUuidResolver(Plugin plugin, UuidResolver uuidResolver, Executor executor, boolean abortInline) {
+		this.plugin = plugin;
+		this.uuidResolver = uuidResolver;
+		this.executor = executor;
+		this.abortInline = abortInline;
+	}
 
-    public void resolveUsername(CommandSender sender, String name, boolean skip, boolean forceInline, CommandUuidResolverHandler handler) {
-        if (sender == null)
-            throw new IllegalArgumentException("sender cannot be null");
-        if (handler == null)
-            throw new IllegalArgumentException("handler cannot be null");
+	public void resolveUsername(CommandSender sender, String name, boolean skip, boolean forceInline, CommandUuidResolverHandler handler) {
+		if (sender == null)
+			throw new IllegalArgumentException("sender cannot be null");
+		if (handler == null)
+			throw new IllegalArgumentException("handler cannot be null");
 
-        if (skip || name == null) {
-            // Simple case: no need to resolve because skip is true or name is null, run inline
-            handler.process(sender, name, null, skip);
-        }
-        else {
-            // See if it's UUID or UUID/DisplayName
-            UuidDisplayName udn = parseUuidDisplayName(name);
-            if (udn != null) {
-                String displayName;
-                OfflinePlayer player = Bukkit.getOfflinePlayer(udn.getUuid());
-                if (player != null && player.getName() != null) {
-                    // Use last known name
-                    displayName = player.getName();
-                }
-                else {
-                    // Default display name (either what was passed in or the UUID in string form)
-                    displayName = hasText(udn.getDisplayName()) ? udn.getDisplayName() : udn.getUuid().toString();
-                }
-                handler.process(sender, displayName, udn.getUuid(), skip);
-            }
-            else {
-                // Is the named player online?
-                Player player = Bukkit.getPlayerExact(name);
-                if (player != null) {
-                    // Simply run inline, no explicit lookup necessary
-                    handler.process(sender, player.getName(), player.getUniqueId(), skip);
-                }
-                else if (forceInline) {
-                    // Lookup & run inline
-                    udn = uuidResolver.resolve(name);
-                    if (udn == null) {
-                        fail(sender, name);
-                    }
-                    else {
-                        handler.process(sender, udn.getDisplayName(), udn.getUuid(), skip);
-                    }
-                }
-                else {
-                    // Check if cached by resolver
-                    udn = uuidResolver.resolve(name, true);
-                    if (udn != null) {
-                        // If so, run inline
-                        handler.process(sender, udn.getDisplayName(), udn.getUuid(), skip);
-                    }
-                    else {
-                        // As an absolute last resort, resolve and run async
-                        sendMessage(sender, colorize("{GRAY}(Resolving UUID...)"));
-                        Runnable task = new UsernameResolverHandlerRunnable(this, plugin, uuidResolver, sender, name, skip, handler);
-                        // NB Bukkit#getOfflinePlayer(String) provides almost the same service
-                        // However, it's not known whether it is fully thread-safe.
-                        executor.execute(task);
-                    }
-                }
-            }
-        }
-    }
+		if (skip || name == null) {
+			// Simple case: no need to resolve because skip is true or name is null, run inline
+			handler.process(sender, name, null, skip);
+		}
+		else {
+			// See if it's UUID or UUID/DisplayName
+			UuidDisplayName udn = parseUuidDisplayName(name);
+			if (udn != null) {
+				String displayName;
+				OfflinePlayer player = Bukkit.getOfflinePlayer(udn.getUuid());
+				if (player != null && player.getName() != null) {
+					// Use last known name
+					displayName = player.getName();
+				}
+				else {
+					// Default display name (either what was passed in or the UUID in string form)
+					displayName = hasText(udn.getDisplayName()) ? udn.getDisplayName() : udn.getUuid().toString();
+				}
+				handler.process(sender, displayName, udn.getUuid(), skip);
+			}
+			else {
+				// Is the named player online?
+				Player player = Bukkit.getPlayerExact(name);
+				if (player != null) {
+					// Simply run inline, no explicit lookup necessary
+					handler.process(sender, player.getName(), player.getUniqueId(), skip);
+				}
+				else if (forceInline) {
+					// Lookup & run inline
+					udn = uuidResolver.resolve(name);
+					if (udn == null) {
+						fail(sender, name);
+					}
+					else {
+						handler.process(sender, udn.getDisplayName(), udn.getUuid(), skip);
+					}
+				}
+				else {
+					// Check if cached by resolver
+					udn = uuidResolver.resolve(name, true);
+					if (udn != null) {
+						// If so, run inline
+						handler.process(sender, udn.getDisplayName(), udn.getUuid(), skip);
+					}
+					else {
+						// As an absolute last resort, resolve and run async
+						sendMessage(sender, colorize("{GRAY}(Resolving UUID...)"));
+						Runnable task = new UsernameResolverHandlerRunnable(this, plugin, uuidResolver, sender, name, skip, handler);
+						// NB Bukkit#getOfflinePlayer(String) provides almost the same service
+						// However, it's not known whether it is fully thread-safe.
+						executor.execute(task);
+					}
+				}
+			}
+		}
+	}
 
-    private static class UsernameResolverHandlerRunnable implements Runnable {
+	private static class UsernameResolverHandlerRunnable implements Runnable {
 
-        private final CommandUuidResolver commandUuidResolver;
+		private final CommandUuidResolver commandUuidResolver;
 
-        private final Plugin plugin;
-        
-        private final UuidResolver uuidResolver;
+		private final Plugin plugin;
 
-        private final CommandSender sender;
+		private final UuidResolver uuidResolver;
 
-        private final UUID senderUuid;
+		private final CommandSender sender;
 
-        private final String name;
+		private final UUID senderUuid;
 
-        private final boolean skip;
+		private final String name;
 
-        private final CommandUuidResolverHandler handler;
+		private final boolean skip;
 
-        private UsernameResolverHandlerRunnable(CommandUuidResolver commandUuidResolver, Plugin plugin, UuidResolver uuidResolver, CommandSender sender, String name, boolean skip, CommandUuidResolverHandler handler) {
-            this.commandUuidResolver = commandUuidResolver;
-            this.plugin = plugin;
-            this.uuidResolver = uuidResolver;
-            this.sender = sender instanceof Player ? null : sender;
-            this.senderUuid = sender instanceof Player ? ((Player)sender).getUniqueId() : null;
-            this.name = name;
-            this.skip = skip;
-            this.handler = handler;
-        }
+		private final CommandUuidResolverHandler handler;
 
-        private CommandSender getSender() {
-            return sender;
-        }
+		private UsernameResolverHandlerRunnable(CommandUuidResolver commandUuidResolver, Plugin plugin, UuidResolver uuidResolver, CommandSender sender, String name, boolean skip, CommandUuidResolverHandler handler) {
+			this.commandUuidResolver = commandUuidResolver;
+			this.plugin = plugin;
+			this.uuidResolver = uuidResolver;
+			this.sender = sender instanceof Player ? null : sender;
+			this.senderUuid = sender instanceof Player ? ((Player)sender).getUniqueId() : null;
+			this.name = name;
+			this.skip = skip;
+			this.handler = handler;
+		}
 
-        @Override
-        public void run() {
-            // Perform lookup
-            final UuidDisplayName udn = uuidResolver.resolve(name);
+		private CommandSender getSender() {
+			return sender;
+		}
 
-            // Run the rest in the main thread
-            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-                @Override
-                public void run() {
-                    // Re-lookup sender
-                    CommandSender sender = getSender() != null ? getSender() : Bukkit.getPlayer(senderUuid);
+		public void run() {
+			// Perform lookup
+			final UuidDisplayName udn = uuidResolver.resolve(name);
 
-                    // Only execute if sender is still around
-                    if (sender != null) {
-                        if (udn == null) {
-                            commandUuidResolver.fail(sender, name);
-                        }
-                        else {
-                            handler.process(sender, udn.getDisplayName(), udn.getUuid(), skip);
-                        }
-                    }
-                }
-            });
-        }
+			// Run the rest in the main thread
+			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+				public void run() {
+					// Re-lookup sender
+					CommandSender sender = getSender() != null ? getSender() : Bukkit.getPlayer(senderUuid);
 
-    }
+					// Only execute if sender is still around
+					if (sender != null) {
+						if (udn == null) {
+							commandUuidResolver.fail(sender, name);
+						}
+						else {
+							handler.process(sender, udn.getDisplayName(), udn.getUuid(), skip);
+						}
+					}
+				}
+			});
+		}
 
-    public void resolveUsername(CommandSender sender, String name, boolean skip, CommandUuidResolverHandler handler) {
-        resolveUsername(sender, name, skip, isBatchProcessing(), handler);
-    }
+	}
 
-    public void resolveUsername(CommandSender sender, String name, CommandUuidResolverHandler handler) {
-        resolveUsername(sender, name, false, isBatchProcessing(), handler);
-    }
+	public void resolveUsername(CommandSender sender, String name, boolean skip, CommandUuidResolverHandler handler) {
+		resolveUsername(sender, name, skip, isBatchProcessing(), handler);
+	}
 
-    private void fail(CommandSender sender, String name) {
-        sendMessage(sender, colorize("{RED}Failed to lookup UUID for {AQUA}%s"), name);
-        if (abortInline) abortBatchProcessing();
-    }
+	public void resolveUsername(CommandSender sender, String name, CommandUuidResolverHandler handler) {
+		resolveUsername(sender, name, false, isBatchProcessing(), handler);
+	}
+
+	private void fail(CommandSender sender, String name) {
+		sendMessage(sender, colorize("{RED}Failed to lookup UUID for {AQUA}%s"), name);
+		if (abortInline) abortBatchProcessing();
+	}
 
 }

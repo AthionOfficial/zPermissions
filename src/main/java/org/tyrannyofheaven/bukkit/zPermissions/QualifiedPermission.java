@@ -26,82 +26,82 @@ import static org.tyrannyofheaven.bukkit.util.ToHStringUtils.hasText;
  */
 public class QualifiedPermission {
 
-    private final String region;
+	private final String region;
 
-    private final String world;
-    
-    private final String permission;
+	private final String world;
 
-    public QualifiedPermission(String qualifiedPermission) {
-        // Pull out region, if present
-        String[] parts = qualifiedPermission.split("/", 2);
-        if (parts.length == 1) {
-            // No region
-            region = null;
-        }
-        else {
-            region = parts[0];
-            qualifiedPermission = parts[1];
-        }
+	private final String permission;
 
-        // Break up into world/permission, as appropriate
-        parts = qualifiedPermission.split(":", 2);
-        if (parts.length == 1) {
-            // No world
-            world = null;
-            permission = parts[0];
-        }
-        else {
-            world = parts[0];
-            permission = parts[1];
-        }
-    }
+	public QualifiedPermission(String qualifiedPermission) {
+		// Pull out region, if present
+		String[] parts = qualifiedPermission.split("/", 2);
+		if (parts.length == 1) {
+			// No region
+			region = null;
+		}
+		else {
+			region = parts[0];
+			qualifiedPermission = parts[1];
+		}
 
-    public QualifiedPermission(String region, String world, String permission) {
-        if (!hasText(region))
-            region = null;
-        if (!hasText(world))
-            world = null;
-        if (!hasText(permission))
-            throw new IllegalArgumentException("permission must have a value");
-        
-        this.region = region;
-        this.world = world;
-        this.permission = permission;
-    }
+		// Break up into world/permission, as appropriate
+		parts = qualifiedPermission.split(":", 2);
+		if (parts.length == 1) {
+			// No world
+			world = null;
+			permission = parts[0];
+		}
+		else {
+			world = parts[0];
+			permission = parts[1];
+		}
+	}
 
-    /**
-     * Return the region if this is a region-specific permission
-     * @return
-     */
-    public String getRegion() {
-        return region;
-    }
+	public QualifiedPermission(String region, String world, String permission) {
+		if (!hasText(region))
+			region = null;
+		if (!hasText(world))
+			world = null;
+		if (!hasText(permission))
+			throw new IllegalArgumentException("permission must have a value");
 
-    /**
-     * Return the name of the world if this is a world-specific permission.
-     * 
-     * @return the name of the world or null if global
-     */
-    public String getWorld() {
-        return world;
-    }
+		this.region = region;
+		this.world = world;
+		this.permission = permission;
+	}
 
-    /**
-     * Return the permission.
-     * 
-     * @return the permission
-     */
-    public String getPermission() {
-        return permission;
-    }
+	/**
+	 * Return the region if this is a region-specific permission
+	 * @return
+	 */
+	public String getRegion() {
+		return region;
+	}
 
-    @Override
-    public String toString() {
-        return String.format("%s%s%s",
-                (getRegion() == null ? "" : getRegion() + "/"),
-                (getWorld() == null ? "" : getWorld() + ":"),
-                getPermission());
-    }
+	/**
+	 * Return the name of the world if this is a world-specific permission.
+	 * 
+	 * @return the name of the world or null if global
+	 */
+	public String getWorld() {
+		return world;
+	}
+
+	/**
+	 * Return the permission.
+	 * 
+	 * @return the permission
+	 */
+	public String getPermission() {
+		return permission;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("%s%s%s",
+				(getRegion() == null ? "" : getRegion() + "/"),
+				(getWorld() == null ? "" : getWorld() + ":"),
+				getPermission());
+	}
 
 }

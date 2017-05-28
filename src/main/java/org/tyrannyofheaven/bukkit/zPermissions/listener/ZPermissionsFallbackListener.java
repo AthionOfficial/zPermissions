@@ -32,25 +32,25 @@ import org.bukkit.event.player.PlayerLoginEvent;
  */
 public class ZPermissionsFallbackListener implements Listener {
 
-    private static final String KICK_MESSAGE = "zPermissions failed to initialize";
+	private static final String KICK_MESSAGE = "zPermissions failed to initialize";
 
-    private final boolean kickOpsOnError;
+	private final boolean kickOpsOnError;
 
-    public ZPermissionsFallbackListener(boolean kickOpsOnError) {
-        this.kickOpsOnError = kickOpsOnError;
-    }
+	public ZPermissionsFallbackListener(boolean kickOpsOnError) {
+		this.kickOpsOnError = kickOpsOnError;
+	}
 
-    @EventHandler(priority=EventPriority.HIGHEST)
-    public void onPlayerLogin(PlayerLoginEvent event) {
-        if (kickOpsOnError || !event.getPlayer().isOp())
-            event.disallow(PlayerLoginEvent.Result.KICK_OTHER, KICK_MESSAGE);
-    }
+	@EventHandler(priority=EventPriority.HIGHEST)
+	public void onPlayerLogin(PlayerLoginEvent event) {
+		if (kickOpsOnError || !event.getPlayer().isOp())
+			event.disallow(PlayerLoginEvent.Result.KICK_OTHER, KICK_MESSAGE);
+	}
 
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        if (event.getPlayer().isOp()) {
-            sendMessage(event.getPlayer(), colorize("{RED}zPermissions failed to initialize; All non-OP log-ins disallowed!"));
-        }
-    }
+	@EventHandler
+	public void onPlayerJoin(PlayerJoinEvent event) {
+		if (event.getPlayer().isOp()) {
+			sendMessage(event.getPlayer(), colorize("{RED}zPermissions failed to initialize; All non-OP log-ins disallowed!"));
+		}
+	}
 
 }

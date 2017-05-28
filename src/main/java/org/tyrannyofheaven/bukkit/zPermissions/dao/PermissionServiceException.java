@@ -22,21 +22,21 @@ package org.tyrannyofheaven.bukkit.zPermissions.dao;
  */
 public class PermissionServiceException extends RuntimeException {
 
-    private static final long serialVersionUID = 79973002335863673L;
+	private static final long serialVersionUID = 79973002335863673L;
 
-    public PermissionServiceException() {
-    }
+	public PermissionServiceException() {
+	}
 
-    public PermissionServiceException(String message) {
-        super(message);
-    }
+	public PermissionServiceException(String message) {
+		super(message);
+	}
 
-    public PermissionServiceException(Throwable cause) {
-        super(cause);
-    }
+	public PermissionServiceException(Throwable cause) {
+		super(cause);
+	}
 
-    public PermissionServiceException(String message, Throwable cause) {
-        super(message, cause);
-    }
+	public PermissionServiceException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
 }

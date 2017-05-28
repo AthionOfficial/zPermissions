@@ -8,21 +8,21 @@ package org.tyrannyofheaven.bukkit.util.command.reader;
  */
 public class CommandReaderException extends RuntimeException {
 
-    private static final long serialVersionUID = 6791041884281671759L;
+	private static final long serialVersionUID = 6791041884281671759L;
 
-    public CommandReaderException() {
-    }
+	public CommandReaderException() {
+	}
 
-    public CommandReaderException(String message, Throwable cause) {
-        super(message, cause);
-    }
+	public CommandReaderException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-    public CommandReaderException(String message) {
-        super(message);
-    }
+	public CommandReaderException(String message) {
+		super(message);
+	}
 
-    public CommandReaderException(Throwable cause) {
-        super(cause);
-    }
+	public CommandReaderException(Throwable cause) {
+		super(cause);
+	}
 
 }

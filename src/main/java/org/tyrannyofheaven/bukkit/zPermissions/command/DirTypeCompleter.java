@@ -27,28 +27,27 @@ import org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsConfig;
 
 public class DirTypeCompleter implements TypeCompleter {
 
-    private final ZPermissionsConfig config;
-    
-    public DirTypeCompleter(ZPermissionsConfig config) {
-        // Dump directory is modifyable via reload, so we have to do this...
-        this.config = config;
-    }
+	private final ZPermissionsConfig config;
 
-    @Override
-    public List<String> complete(Class<?> clazz, String arg, CommandSender sender, String partial) {
-        if (clazz == String.class) {
-            File[] files = config.getDumpDirectory().listFiles();
-            if (files != null) {
-                List<String> result = new ArrayList<>();
-                for (File file : files) {
-                    if (file.isFile() && !file.getName().startsWith(".") && StringUtil.startsWithIgnoreCase(file.getName(), partial))
-                        result.add(file.getName());
-                }
-                Collections.sort(result);
-                return result;
-            }
-        }
-        return Collections.emptyList();
-    }
+	public DirTypeCompleter(ZPermissionsConfig config) {
+		// Dump directory is modifyable via reload, so we have to do this...
+		this.config = config;
+	}
+
+	public List<String> complete(Class<?> clazz, String arg, CommandSender sender, String partial) {
+		if (clazz == String.class) {
+			File[] files = config.getDumpDirectory().listFiles();
+			if (files != null) {
+				List<String> result = new ArrayList<String>();
+				for (File file : files) {
+					if (file.isFile() && !file.getName().startsWith(".") && StringUtil.startsWithIgnoreCase(file.getName(), partial))
+						result.add(file.getName());
+				}
+				Collections.sort(result);
+				return result;
+			}
+		}
+		return Collections.emptyList();
+	}
 
 }

@@ -23,17 +23,17 @@ package org.tyrannyofheaven.bukkit.util.command;
  */
 public class ParseException extends CommandException {
 
-    private static final long serialVersionUID = 6379096495842869497L;
+	private static final long serialVersionUID = 6379096495842869497L;
 
-    public ParseException() {
-    }
+	public ParseException() {
+	}
 
-    public ParseException(String message) {
-        super(message);
-    }
+	public ParseException(String message) {
+		super(message);
+	}
 
-    public ParseException(String format, Object... args) {
-        super(format, args);
-    }
+	public ParseException(String format, Object... args) {
+		super(format, args);
+	}
 
 }

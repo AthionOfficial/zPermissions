@@ -22,84 +22,84 @@ package org.tyrannyofheaven.bukkit.util.command;
  */
 public interface UsageOptions {
 
-    /**
-     * The usage preamble. Can be used to set starting color.
-     * 
-     * @return the usage preamble
-     */
-    public String getPreamble();
+	/**
+	 * The usage preamble. Can be used to set starting color.
+	 * 
+	 * @return the usage preamble
+	 */
+	public String getPreamble();
 
-    /**
-     * The usage postamble. Outputted at the end of the line. (After the
-     * description, if one is present.)
-     * 
-     * @return the usage postamble
-     */
-    public String getPostamble();
+	/**
+	 * The usage postamble. Outputted at the end of the line. (After the
+	 * description, if one is present.)
+	 * 
+	 * @return the usage postamble
+	 */
+	public String getPostamble();
 
-    /**
-     * Starting delimiter for flags.
-     * 
-     * @return delimiter string
-     */
-    public String getFlagStart();
+	/**
+	 * Starting delimiter for flags.
+	 * 
+	 * @return delimiter string
+	 */
+	public String getFlagStart();
 
-    /**
-     * Ending delimiter for flags.
-     * 
-     * @return delimiter string
-     */
-    public String getFlagEnd();
+	/**
+	 * Ending delimiter for flags.
+	 * 
+	 * @return delimiter string
+	 */
+	public String getFlagEnd();
 
-    /**
-     * Starting delimiter for flag values.
-     * 
-     * @return delimiter string
-     */
-    public String getFlagValueStart();
-    
-    /**
-     * Ending delimiter for flag values.
-     * 
-     * @return delimiter string
-     */
-    public String getFlagValueEnd();
+	/**
+	 * Starting delimiter for flag values.
+	 * 
+	 * @return delimiter string
+	 */
+	public String getFlagValueStart();
 
-    /**
-     * Starting delimiter for positional parameters.
-     * 
-     * @param optional true if optional parameter
-     * @return delimiter string
-     */
-    public String getParameterStart(boolean optional);
-    
-    /**
-     * Ending delimiter for positional parameters.
-     * 
-     * @param optional true if optional parameter
-     * @return delimiter string
-     */
-    public String getParameterEnd(boolean optional);
+	/**
+	 * Ending delimiter for flag values.
+	 * 
+	 * @return delimiter string
+	 */
+	public String getFlagValueEnd();
 
-    /**
-     * Delimiter between usage and its description.
-     * 
-     * @return delimiter string
-     */
-    public String getDescriptionDelimiter();
+	/**
+	 * Starting delimiter for positional parameters.
+	 * 
+	 * @param optional true if optional parameter
+	 * @return delimiter string
+	 */
+	public String getParameterStart(boolean optional);
 
-    /**
-     * Starting delimiter for varargs parameter.
-     * 
-     * @return delimiter string
-     */
-    public String getVarargsStart();
+	/**
+	 * Ending delimiter for positional parameters.
+	 * 
+	 * @param optional true if optional parameter
+	 * @return delimiter string
+	 */
+	public String getParameterEnd(boolean optional);
 
-    /**
-     * Ending delimiter for varargs parameter.
-     * 
-     * @return delimiter string
-     */
-    public String getVarargsEnd();
+	/**
+	 * Delimiter between usage and its description.
+	 * 
+	 * @return delimiter string
+	 */
+	public String getDescriptionDelimiter();
+
+	/**
+	 * Starting delimiter for varargs parameter.
+	 * 
+	 * @return delimiter string
+	 */
+	public String getVarargsStart();
+
+	/**
+	 * Ending delimiter for varargs parameter.
+	 * 
+	 * @return delimiter string
+	 */
+	public String getVarargsEnd();
 
 }

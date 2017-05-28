@@ -51,469 +51,469 @@ import org.tyrannyofheaven.bukkit.zPermissions.util.Utils;
  */
 public class ZPermissionsServiceImpl implements ZPermissionsService {
 
-    private static final Set<Class<?>> validMetadataTypes;
-
-    private final Plugin plugin;
-
-    private final PermissionsResolver resolver;
-
-    private final PermissionService permissionService;
-
-    private final MetadataManager metadataManager;
-
-    private final TransactionStrategy transactionStrategy;
-
-    private final ZPermissionsConfig config;
-
-    private final PlayerPrefixHandler playerPrefixHandler;
-
-    private final ThreadLocal<Boolean> playerPrefixHandlerLoopAvoidance = new ThreadLocal<>();
-
-    static {
-        Set<Class<?>> types = new HashSet<>();
-        types.add(Object.class);
-        types.add(String.class);
-        types.add(Integer.class);
-        types.add(Long.class);
-        types.add(Float.class);
-        types.add(Double.class);
-        types.add(Boolean.class);
-        validMetadataTypes = Collections.unmodifiableSet(types);
-    }
-
-    public ZPermissionsServiceImpl(Plugin plugin, PermissionsResolver resolver, PermissionService permissionService, MetadataManager metadataManager, TransactionStrategy transactionStrategy, ZPermissionsConfig config, PlayerPrefixHandler playerPrefixHandler) {
-        if (plugin == null)
-            throw new IllegalArgumentException("plugin cannot be null");
-        if (resolver == null)
-            throw new IllegalArgumentException("resolver cannot be null");
-        if (permissionService == null)
-            throw new IllegalArgumentException("permissionService cannot be null");
-        if (metadataManager == null)
-            throw new IllegalArgumentException("metadataManager cannot be null");
-        if (transactionStrategy == null)
-            throw new IllegalArgumentException("transactionStrategy cannot be null");
-        if (config == null)
-            throw new IllegalArgumentException("config cannot be null");
-        if (playerPrefixHandler == null)
-            throw new IllegalArgumentException("playerPrefixHandler cannot be null");
-        this.plugin = plugin;
-        this.resolver = resolver;
-        this.permissionService = permissionService;
-        this.metadataManager = metadataManager;
-        this.transactionStrategy = transactionStrategy;
-        this.config = config;
-        this.playerPrefixHandler = playerPrefixHandler;
-    }
-
-    private PermissionsResolver getResolver() {
-        return resolver;
-    }
-    
-    private PermissionService getPermissionService() {
-        return permissionService;
-    }
-
-    private MetadataManager getMetadataManager() {
-        return metadataManager;
-    }
-
-    private TransactionStrategy getTransactionStrategy() {
-        return transactionStrategy;
-    }
-
-    private ZPermissionsConfig getZPermissionsConfig() {
-        return config;
-    }
-
-    /* (non-Javadoc)
-     * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getAllGroups()
-     */
-    @Override
-    public Set<String> getAllGroups() {
-        Set<String> groups = new HashSet<>();
-        
-        for (String groupName : getPermissionService().getEntityNames(true)) {
-            groups.add(groupName);
-        }
-
-        return groups;
-    }
-
-    /* (non-Javadoc)
-     * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getPlayerAssignedGroups(java.lang.String)
-     */
-    @Deprecated
-    @Override
-    public List<String> getPlayerAssignedGroups(String playerName) {
-        if (!hasText(playerName))
-            throw new IllegalArgumentException("playerName must have a value");
-
-        OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
-        if (player == null) return Collections.emptyList();
-        UUID uuid = player.getUniqueId();
-
-        return getPlayerAssignedGroups(uuid);
-    }
-
-    @Override
-    public List<String> getPlayerAssignedGroups(UUID uuid) {
-        if (uuid == null)
-            throw new IllegalArgumentException("uuid cannot be null");
-
-        List<String> groups = Utils.toGroupNames(Utils.filterExpired(getPermissionService().getGroups(uuid)));
-        // NB: Only works because we know returned list is mutable.
-
-        // If totally empty, then they are in the default group.
-        if (groups.isEmpty())
-            groups.add(getResolver().getDefaultGroup());
-
-        // Returned groups are in application order, so reverse them
-        Collections.reverse(groups);
-        // The first group of the returned list is the highest priority
-        return groups;
-    }
-
-    /* (non-Javadoc)
-     * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getPlayerGroups(java.lang.String)
-     */
-    @Deprecated
-    @Override
-    public Set<String> getPlayerGroups(final String playerName) {
-        if (!hasText(playerName))
-            throw new IllegalArgumentException("playerName must have a value");
-
-        OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
-        if (player == null) return Collections.emptySet();
-        UUID uuid = player.getUniqueId();
-
-        return getPlayerGroups(uuid);
-    }
-
-    @Override
-    public Set<String> getPlayerGroups(final UUID uuid) {
-        if (uuid == null)
-            throw new IllegalArgumentException("uuid cannot be null");
-
-        final Set<String> result = new LinkedHashSet<>();
-
-        getTransactionStrategy().execute(new TransactionCallbackWithoutResult() {
-            @Override
-            public void doInTransactionWithoutResult() throws Exception {
-                for (String group : Utils.toGroupNames(Utils.filterExpired(getPermissionService().getGroups(uuid)))) {
-                    // Get ancestors
-                    List<String> ancestors = getPermissionService().getAncestry(group);
-                    if (ancestors.isEmpty()) {
-                        // Non-existant default group
-                        ancestors.add(getResolver().getDefaultGroup());
-                    }
-
-                    // NB: ancestors will include group as well
-                    result.addAll(ancestors);
-                }
-            }
-        }, true);
-
-        // If totally empty, then they are in the default group.
-        if (result.isEmpty())
-            result.add(getResolver().getDefaultGroup());
-
-        return result;
-    }
-
-    /* (non-Javadoc)
-     * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getGroupPermissions(java.lang.String, java.util.Set, java.lang.String)
-     */
-    @Override
-    public Map<String, Boolean> getGroupPermissions(String worldName, Set<String> regionNames, final String groupName) {
-        final String lworldName = hasText(worldName) ? worldName.toLowerCase() : null;
-        if (regionNames == null)
-            regionNames = Collections.emptySet();
-        if (!hasText(groupName))
-            throw new IllegalArgumentException("groupName must have a value");
-
-        // Ensure all region names are lowercased
-        final Set<String> regions = new LinkedHashSet<>();
-        for (String regionName : regionNames) {
-            regions.add(regionName.toLowerCase());
-        }
-
-        Map<String, Boolean> permissions = getTransactionStrategy().execute(new TransactionCallback<Map<String, Boolean>>() {
-            @Override
-            public Map<String, Boolean> doInTransaction() throws Exception {
-                return getResolver().resolveGroup(groupName.toLowerCase(), lworldName, regions);
-            }
-        }, true);
-
-        return permissions;
-    }
-
-    /* (non-Javadoc)
-     * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getPlayerPermissions(java.lang.String, java.util.Set, java.lang.String)
-     */
-    @Deprecated
-    @Override
-    public Map<String, Boolean> getPlayerPermissions(String worldName, Set<String> regionNames, final String playerName) {
-        if (!hasText(playerName))
-            throw new IllegalArgumentException("playerName must have a value");
-
-        OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
-        if (player == null) return Collections.emptyMap();
-        UUID uuid = player.getUniqueId();
-        
-        return getPlayerPermissions(worldName, regionNames, uuid);
-    }
-
-    @Override
-    public Map<String, Boolean> getPlayerPermissions(String worldName, Set<String> regionNames, final UUID uuid) {
-        if (uuid == null)
-            throw new IllegalArgumentException("uuid cannot be null");
-
-        final String lworldName = hasText(worldName) ? worldName.toLowerCase() : null;
-        if (regionNames == null)
-            regionNames = Collections.emptySet();
-
-        // Ensure all region names are lowercased
-        final Set<String> regions = new LinkedHashSet<>();
-        for (String regionName : regionNames) {
-            regions.add(regionName.toLowerCase());
-        }
-
-        Map<String, Boolean> permissions = getTransactionStrategy().execute(new TransactionCallback<Map<String, Boolean>>() {
-            @Override
-            public Map<String, Boolean> doInTransaction() throws Exception {
-                return getResolver().resolvePlayer(uuid, lworldName, regions).getPermissions();
-            }
-        }, true);
-
-        return permissions;
-    }
-
-    /* (non-Javadoc)
-     * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getAllPlayers()
-     */
-    @Deprecated
-    @Override
-    public Set<String> getAllPlayers() {
-        Set<String> players = new HashSet<>();
-        
-        for (String playerName : getPermissionService().getEntityNames(false)) {
-            players.add(playerName);
-        }
-
-        return players;
-    }
-
-    @Override
-    public Set<UUID> getAllPlayersUUID() {
-        Set<UUID> players = new HashSet<>();
-        
-        for (PermissionEntity player : getPermissionService().getEntities(false)) {
-            players.add(player.getUuid());
-        }
-
-        return players;
-    }
-
-    /* (non-Javadoc)
-     * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getGroupMembers(java.lang.String)
-     */
-    @Deprecated
-    @Override
-    public Set<String> getGroupMembers(String groupName) {
-        if (!hasText(groupName))
-            throw new IllegalArgumentException("groupName must have a value");
-        // PermissionService returns them in alphabetical order. This interface doesn't care
-        // about ordering.
-        return new HashSet<>(Utils.toMembers(Utils.filterExpired(getPermissionService().getMembers(groupName)), false));
-    }
-
-    @Override
-    public Set<UUID> getGroupMembersUUID(String groupName) {
-        if (!hasText(groupName))
-            throw new IllegalArgumentException("groupName must have a value");
-        // PermissionService returns them in alphabetical order. This interface doesn't care
-        // about ordering.
-        
-        Set<UUID> members = new HashSet<>();
-
-        for (Membership membership : Utils.filterExpired(getPermissionService().getMembers(groupName))) {
-            members.add(membership.getUuid());
-        }
-
-        return members;
-    }
-
-    /* (non-Javadoc)
-     * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getPlayerMetadata(java.lang.String, java.lang.String, java.lang.Class)
-     */
-    @Deprecated
-    @Override
-    public <T> T getPlayerMetadata(String playerName, String metadataName, Class<T> type) {
-        if (!hasText(playerName))
-            throw new IllegalArgumentException("playerName must have a value");
-
-        OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
-        if (player == null) return null;
-        UUID uuid = player.getUniqueId();
-
-        return getPlayerMetadata(uuid, metadataName, type);
-    }
-
-    @Override
-    public <T> T getPlayerMetadata(UUID uuid, String metadataName, Class<T> type) {
-        if (uuid == null)
-            throw new IllegalArgumentException("uuid cannot be null");
-
-        // Handle prefix/suffix ourselves
-        if (config.isServiceMetadataPrefixHack() && type == String.class) {
-            boolean isPrefix = MetadataConstants.PREFIX_KEY.equals(metadataName);
-            if (isPrefix || MetadataConstants.SUFFIX_KEY.equals(metadataName)) {
-                // Forward to #getPlayerPrefix() or #getPlayerSuffix()
-                // ...only if we haven't already done so in this thread
-                if (playerPrefixHandlerLoopAvoidance.get() == null) {
-                    playerPrefixHandlerLoopAvoidance.set(isPrefix);
-                    try {
-                        String value = isPrefix ? getPlayerPrefix(uuid) : getPlayerSuffix(uuid);
-                        return type.cast(value);
-                    }
-                    finally {
-                        playerPrefixHandlerLoopAvoidance.set(null);
-                    }
-                }
-                // Otherwise just fall through (avoids infinite recursion since PlayerPrefixHandler may call us)
-            }
-        }
-
-        return getEntityMetadata("ignored", uuid, false, metadataName, type);
-    }
-
-    /* (non-Javadoc)
-     * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getGroupMetadata(java.lang.String, java.lang.String, java.lang.Class)
-     */
-    @Override
-    public <T> T getGroupMetadata(String groupName, String metadataName, Class<T> type) {
-        if (!hasText(groupName))
-            throw new IllegalArgumentException("groupName must have a value");
-        return getEntityMetadata(groupName, null, true, metadataName, type);
-    }
-
-    private <T> T getEntityMetadata(final String name, final UUID uuid, final boolean group, final String metadataName, Class<T> type) {
-        if (!group && uuid == null)
-            throw new IllegalArgumentException("uuid cannot be null");
-        if (!hasText(metadataName))
-            throw new IllegalArgumentException("metadataName must have a value");
-        if (type == null)
-            throw new IllegalArgumentException("type cannot be null");
-        if (!validMetadataTypes.contains(type))
-            throw new IllegalArgumentException("Unsupported metadata type");
-        
-        Object value;
-        if (config.isInheritedMetadata()) {
-            // Use metadata manager to resolve metadata
-            value = getMetadataManager().getMetadata(name, uuid, group, metadataName);
-        }
-        else {
-            value = getTransactionStrategy().execute(new TransactionCallback<Object>() {
-                @Override
-                public Object doInTransaction() throws Exception {
-                    return getPermissionService().getMetadata(name, uuid, group, metadataName);
-                }
-            }, true);
-        }
-
-        if (value == null)
-            return null;
-
-        if (type == Object.class)
-            return type.cast(value); // Can be any type
-        else if (value.getClass() == type)
-            return type.cast(value); // Same type, good to go
-        else if (type == Integer.class && value.getClass() == Long.class)
-            return type.cast(((Number)value).intValue()); // Convert
-        else if (type == Float.class && value.getClass() == Double.class)
-            return type.cast(((Number)value).floatValue()); // Convert
-
-        throw new IllegalStateException("Mismatched metadata type: " + value.getClass().getSimpleName() + "; expecting: " + type.getSimpleName());
-    }
-
-    /* (non-Javadoc)
-     * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getAllTracks()
-     */
-    @Override
-    public Set<String> getAllTracks() {
-        return new HashSet<>(getZPermissionsConfig().getTracks());
-    }
-
-    /* (non-Javadoc)
-     * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getTrackGroups(java.lang.String)
-     */
-    @Override
-    public List<String> getTrackGroups(String trackName) {
-        if (!hasText(trackName))
-            throw new IllegalArgumentException("trackName must have a value");
-        
-        List<String> result = getZPermissionsConfig().getTrack(trackName);
-        if (result == null || result.isEmpty())
-            throw new IllegalStateException("Track has not been defined");
-        // NB make a copy
-        return new ArrayList<>(result);
-    }
-
-    /* (non-Javadoc)
-     * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getPlayerPrimaryGroup(java.lang.String)
-     */
-    @Deprecated
-    @Override
-    public String getPlayerPrimaryGroup(String playerName) {
-        if (!hasText(playerName))
-            throw new IllegalArgumentException("playerName must have a value");
-
-        OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
-        if (player == null) return null;
-        UUID uuid = player.getUniqueId();
-
-        return getPlayerPrimaryGroup(uuid);
-    }
-
-    @Override
-    public String getPlayerPrimaryGroup(UUID uuid) {
-        try {
-            String track = getPlayerMetadata(uuid, MetadataConstants.PRIMARY_GROUP_TRACK_KEY, String.class);
-            if (!hasText(track))
-                track = config.getDefaultPrimaryGroupTrack();
-            if (hasText(track)) {
-                List<String> groups = getTrackGroups(track);
-                Collections.reverse(groups); // groups is now high rank to low
-
-                Set<String> trackGroups = new LinkedHashSet<>(groups);
-                trackGroups.retainAll(getPlayerAssignedGroups(uuid)); // intersection with all assigned groups
-
-                if (!trackGroups.isEmpty())
-                    return trackGroups.iterator().next(); // return highest-ranked group in given track
-            }
-        }
-        catch (IllegalStateException e) {
-            warn(plugin, "Bad property '%s' for %s; is it a string and does the track exist?", MetadataConstants.PRIMARY_GROUP_TRACK_KEY, canonicalizeUuid(uuid));
-        }
-
-        // Has no concept of primary group... use highest-priority assigned group instead
-        List<String> groups = getPlayerAssignedGroups(uuid);
-        if (!groups.isEmpty()) {
-            return groups.get(0);
-        } else {
-            // Shouldn't get here, but just in case
-            return resolver.getDefaultGroup();
-        }
-    }
-
-    @Override
-    public String getPlayerPrefix(UUID uuid) {
-        return playerPrefixHandler.getPlayerPrefix(this, uuid);
-    }
-
-    @Override
-    public String getPlayerSuffix(UUID uuid) {
-        return playerPrefixHandler.getPlayerSuffix(this, uuid);
-    }
+	private static final Set<Class<?>> validMetadataTypes;
+
+	private final Plugin plugin;
+
+	private final PermissionsResolver resolver;
+
+	private final PermissionService permissionService;
+
+	private final MetadataManager metadataManager;
+
+	private final TransactionStrategy transactionStrategy;
+
+	private final ZPermissionsConfig config;
+
+	private final PlayerPrefixHandler playerPrefixHandler;
+
+	private final ThreadLocal<Boolean> playerPrefixHandlerLoopAvoidance = new ThreadLocal<Boolean>();
+
+	static {
+		Set<Class<?>> types = new HashSet<Class<?>>();
+		types.add(Object.class);
+		types.add(String.class);
+		types.add(Integer.class);
+		types.add(Long.class);
+		types.add(Float.class);
+		types.add(Double.class);
+		types.add(Boolean.class);
+		validMetadataTypes = Collections.unmodifiableSet(types);
+	}
+
+	public ZPermissionsServiceImpl(Plugin plugin, PermissionsResolver resolver, PermissionService permissionService, MetadataManager metadataManager, TransactionStrategy transactionStrategy, ZPermissionsConfig config, PlayerPrefixHandler playerPrefixHandler) {
+		if (plugin == null)
+			throw new IllegalArgumentException("plugin cannot be null");
+		if (resolver == null)
+			throw new IllegalArgumentException("resolver cannot be null");
+		if (permissionService == null)
+			throw new IllegalArgumentException("permissionService cannot be null");
+		if (metadataManager == null)
+			throw new IllegalArgumentException("metadataManager cannot be null");
+		if (transactionStrategy == null)
+			throw new IllegalArgumentException("transactionStrategy cannot be null");
+		if (config == null)
+			throw new IllegalArgumentException("config cannot be null");
+		if (playerPrefixHandler == null)
+			throw new IllegalArgumentException("playerPrefixHandler cannot be null");
+		this.plugin = plugin;
+		this.resolver = resolver;
+		this.permissionService = permissionService;
+		this.metadataManager = metadataManager;
+		this.transactionStrategy = transactionStrategy;
+		this.config = config;
+		this.playerPrefixHandler = playerPrefixHandler;
+	}
+
+	private PermissionsResolver getResolver() {
+		return resolver;
+	}
+
+	private PermissionService getPermissionService() {
+		return permissionService;
+	}
+
+	private MetadataManager getMetadataManager() {
+		return metadataManager;
+	}
+
+	private TransactionStrategy getTransactionStrategy() {
+		return transactionStrategy;
+	}
+
+	private ZPermissionsConfig getZPermissionsConfig() {
+		return config;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getAllGroups()
+	 */
+
+	public Set<String> getAllGroups() {
+		Set<String> groups = new HashSet<String>();
+
+		for (String groupName : getPermissionService().getEntityNames(true)) {
+			groups.add(groupName);
+		}
+
+		return groups;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getPlayerAssignedGroups(java.lang.String)
+	 */
+	@Deprecated
+
+	public List<String> getPlayerAssignedGroups(String playerName) {
+		if (!hasText(playerName))
+			throw new IllegalArgumentException("playerName must have a value");
+
+		OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
+		if (player == null) return Collections.emptyList();
+		UUID uuid = player.getUniqueId();
+
+		return getPlayerAssignedGroups(uuid);
+	}
+
+
+	public List<String> getPlayerAssignedGroups(UUID uuid) {
+		if (uuid == null)
+			throw new IllegalArgumentException("uuid cannot be null");
+
+		List<String> groups = Utils.toGroupNames(Utils.filterExpired(getPermissionService().getGroups(uuid)));
+		// NB: Only works because we know returned list is mutable.
+
+		// If totally empty, then they are in the default group.
+		if (groups.isEmpty())
+			groups.add(getResolver().getDefaultGroup());
+
+		// Returned groups are in application order, so reverse them
+		Collections.reverse(groups);
+		// The first group of the returned list is the highest priority
+		return groups;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getPlayerGroups(java.lang.String)
+	 */
+	@Deprecated
+
+	public Set<String> getPlayerGroups(final String playerName) {
+		if (!hasText(playerName))
+			throw new IllegalArgumentException("playerName must have a value");
+
+		OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
+		if (player == null) return Collections.emptySet();
+		UUID uuid = player.getUniqueId();
+
+		return getPlayerGroups(uuid);
+	}
+
+
+	public Set<String> getPlayerGroups(final UUID uuid) {
+		if (uuid == null)
+			throw new IllegalArgumentException("uuid cannot be null");
+
+		final Set<String> result = new LinkedHashSet<String>();
+
+		getTransactionStrategy().execute(new TransactionCallbackWithoutResult() {
+
+			public void doInTransactionWithoutResult() throws Exception {
+				for (String group : Utils.toGroupNames(Utils.filterExpired(getPermissionService().getGroups(uuid)))) {
+					// Get ancestors
+					List<String> ancestors = getPermissionService().getAncestry(group);
+					if (ancestors.isEmpty()) {
+						// Non-existant default group
+						ancestors.add(getResolver().getDefaultGroup());
+					}
+
+					// NB: ancestors will include group as well
+					result.addAll(ancestors);
+				}
+			}
+		}, true);
+
+		// If totally empty, then they are in the default group.
+		if (result.isEmpty())
+			result.add(getResolver().getDefaultGroup());
+
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getGroupPermissions(java.lang.String, java.util.Set, java.lang.String)
+	 */
+
+	public Map<String, Boolean> getGroupPermissions(String worldName, Set<String> regionNames, final String groupName) {
+		final String lworldName = hasText(worldName) ? worldName.toLowerCase() : null;
+		if (regionNames == null)
+			regionNames = Collections.emptySet();
+		if (!hasText(groupName))
+			throw new IllegalArgumentException("groupName must have a value");
+
+		// Ensure all region names are lowercased
+		final Set<String> regions = new LinkedHashSet<String>();
+		for (String regionName : regionNames) {
+			regions.add(regionName.toLowerCase());
+		}
+
+		Map<String, Boolean> permissions = getTransactionStrategy().execute(new TransactionCallback<Map<String, Boolean>>() {
+
+			public Map<String, Boolean> doInTransaction() throws Exception {
+				return getResolver().resolveGroup(groupName.toLowerCase(), lworldName, regions);
+			}
+		}, true);
+
+		return permissions;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getPlayerPermissions(java.lang.String, java.util.Set, java.lang.String)
+	 */
+	@Deprecated
+
+	public Map<String, Boolean> getPlayerPermissions(String worldName, Set<String> regionNames, final String playerName) {
+		if (!hasText(playerName))
+			throw new IllegalArgumentException("playerName must have a value");
+
+		OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
+		if (player == null) return Collections.emptyMap();
+		UUID uuid = player.getUniqueId();
+
+		return getPlayerPermissions(worldName, regionNames, uuid);
+	}
+
+
+	public Map<String, Boolean> getPlayerPermissions(String worldName, Set<String> regionNames, final UUID uuid) {
+		if (uuid == null)
+			throw new IllegalArgumentException("uuid cannot be null");
+
+		final String lworldName = hasText(worldName) ? worldName.toLowerCase() : null;
+		if (regionNames == null)
+			regionNames = Collections.emptySet();
+
+		// Ensure all region names are lowercased
+		final Set<String> regions = new LinkedHashSet<String>();
+		for (String regionName : regionNames) {
+			regions.add(regionName.toLowerCase());
+		}
+
+		Map<String, Boolean> permissions = getTransactionStrategy().execute(new TransactionCallback<Map<String, Boolean>>() {
+
+			public Map<String, Boolean> doInTransaction() throws Exception {
+				return getResolver().resolvePlayer(uuid, lworldName, regions).getPermissions();
+			}
+		}, true);
+
+		return permissions;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getAllPlayers()
+	 */
+	@Deprecated
+
+	public Set<String> getAllPlayers() {
+		Set<String> players = new HashSet<String>();
+
+		for (String playerName : getPermissionService().getEntityNames(false)) {
+			players.add(playerName);
+		}
+
+		return players;
+	}
+
+
+	public Set<UUID> getAllPlayersUUID() {
+		Set<UUID> players = new HashSet<UUID>();
+
+		for (PermissionEntity player : getPermissionService().getEntities(false)) {
+			players.add(player.getUuid());
+		}
+
+		return players;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getGroupMembers(java.lang.String)
+	 */
+	@Deprecated
+
+	public Set<String> getGroupMembers(String groupName) {
+		if (!hasText(groupName))
+			throw new IllegalArgumentException("groupName must have a value");
+		// PermissionService returns them in alphabetical order. This interface doesn't care
+		// about ordering.
+		return new HashSet<String>(Utils.toMembers(Utils.filterExpired(getPermissionService().getMembers(groupName)), false));
+	}
+
+
+	public Set<UUID> getGroupMembersUUID(String groupName) {
+		if (!hasText(groupName))
+			throw new IllegalArgumentException("groupName must have a value");
+		// PermissionService returns them in alphabetical order. This interface doesn't care
+		// about ordering.
+
+		Set<UUID> members = new HashSet<UUID>();
+
+		for (Membership membership : Utils.filterExpired(getPermissionService().getMembers(groupName))) {
+			members.add(membership.getUuid());
+		}
+
+		return members;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getPlayerMetadata(java.lang.String, java.lang.String, java.lang.Class)
+	 */
+	@Deprecated
+
+	public <T> T getPlayerMetadata(String playerName, String metadataName, Class<T> type) {
+		if (!hasText(playerName))
+			throw new IllegalArgumentException("playerName must have a value");
+
+		OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
+		if (player == null) return null;
+		UUID uuid = player.getUniqueId();
+
+		return getPlayerMetadata(uuid, metadataName, type);
+	}
+
+
+	public <T> T getPlayerMetadata(UUID uuid, String metadataName, Class<T> type) {
+		if (uuid == null)
+			throw new IllegalArgumentException("uuid cannot be null");
+
+		// Handle prefix/suffix ourselves
+		if (config.isServiceMetadataPrefixHack() && type == String.class) {
+			boolean isPrefix = MetadataConstants.PREFIX_KEY.equals(metadataName);
+			if (isPrefix || MetadataConstants.SUFFIX_KEY.equals(metadataName)) {
+				// Forward to #getPlayerPrefix() or #getPlayerSuffix()
+				// ...only if we haven't already done so in this thread
+				if (playerPrefixHandlerLoopAvoidance.get() == null) {
+					playerPrefixHandlerLoopAvoidance.set(isPrefix);
+					try {
+						String value = isPrefix ? getPlayerPrefix(uuid) : getPlayerSuffix(uuid);
+						return type.cast(value);
+					}
+					finally {
+						playerPrefixHandlerLoopAvoidance.set(null);
+					}
+				}
+				// Otherwise just fall through (avoids infinite recursion since PlayerPrefixHandler may call us)
+			}
+		}
+
+		return getEntityMetadata("ignored", uuid, false, metadataName, type);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getGroupMetadata(java.lang.String, java.lang.String, java.lang.Class)
+	 */
+
+	public <T> T getGroupMetadata(String groupName, String metadataName, Class<T> type) {
+		if (!hasText(groupName))
+			throw new IllegalArgumentException("groupName must have a value");
+		return getEntityMetadata(groupName, null, true, metadataName, type);
+	}
+
+	private <T> T getEntityMetadata(final String name, final UUID uuid, final boolean group, final String metadataName, Class<T> type) {
+		if (!group && uuid == null)
+			throw new IllegalArgumentException("uuid cannot be null");
+		if (!hasText(metadataName))
+			throw new IllegalArgumentException("metadataName must have a value");
+		if (type == null)
+			throw new IllegalArgumentException("type cannot be null");
+		if (!validMetadataTypes.contains(type))
+			throw new IllegalArgumentException("Unsupported metadata type");
+
+		Object value;
+		if (config.isInheritedMetadata()) {
+			// Use metadata manager to resolve metadata
+			value = getMetadataManager().getMetadata(name, uuid, group, metadataName);
+		}
+		else {
+			value = getTransactionStrategy().execute(new TransactionCallback<Object>() {
+
+				public Object doInTransaction() throws Exception {
+					return getPermissionService().getMetadata(name, uuid, group, metadataName);
+				}
+			}, true);
+		}
+
+		if (value == null)
+			return null;
+
+		if (type == Object.class)
+			return type.cast(value); // Can be any type
+		else if (value.getClass() == type)
+			return type.cast(value); // Same type, good to go
+		else if (type == Integer.class && value.getClass() == Long.class)
+			return type.cast(((Number)value).intValue()); // Convert
+		else if (type == Float.class && value.getClass() == Double.class)
+			return type.cast(((Number)value).floatValue()); // Convert
+
+		throw new IllegalStateException("Mismatched metadata type: " + value.getClass().getSimpleName() + "; expecting: " + type.getSimpleName());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getAllTracks()
+	 */
+
+	public Set<String> getAllTracks() {
+		return new HashSet<String>(getZPermissionsConfig().getTracks());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getTrackGroups(java.lang.String)
+	 */
+
+	public List<String> getTrackGroups(String trackName) {
+		if (!hasText(trackName))
+			throw new IllegalArgumentException("trackName must have a value");
+
+		List<String> result = getZPermissionsConfig().getTrack(trackName);
+		if (result == null || result.isEmpty())
+			throw new IllegalStateException("Track has not been defined");
+		// NB make a copy
+		return new ArrayList<String>(result);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsService#getPlayerPrimaryGroup(java.lang.String)
+	 */
+	@Deprecated
+
+	public String getPlayerPrimaryGroup(String playerName) {
+		if (!hasText(playerName))
+			throw new IllegalArgumentException("playerName must have a value");
+
+		OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
+		if (player == null) return null;
+		UUID uuid = player.getUniqueId();
+
+		return getPlayerPrimaryGroup(uuid);
+	}
+
+
+	public String getPlayerPrimaryGroup(UUID uuid) {
+		try {
+			String track = getPlayerMetadata(uuid, MetadataConstants.PRIMARY_GROUP_TRACK_KEY, String.class);
+			if (!hasText(track))
+				track = config.getDefaultPrimaryGroupTrack();
+			if (hasText(track)) {
+				List<String> groups = getTrackGroups(track);
+				Collections.reverse(groups); // groups is now high rank to low
+
+				Set<String> trackGroups = new LinkedHashSet<String>(groups);
+				trackGroups.retainAll(getPlayerAssignedGroups(uuid)); // intersection with all assigned groups
+
+				if (!trackGroups.isEmpty())
+					return trackGroups.iterator().next(); // return highest-ranked group in given track
+			}
+		}
+		catch (IllegalStateException e) {
+			warn(plugin, "Bad property '%s' for %s; is it a string and does the track exist?", MetadataConstants.PRIMARY_GROUP_TRACK_KEY, canonicalizeUuid(uuid));
+		}
+
+		// Has no concept of primary group... use highest-priority assigned group instead
+		List<String> groups = getPlayerAssignedGroups(uuid);
+		if (!groups.isEmpty()) {
+			return groups.get(0);
+		} else {
+			// Shouldn't get here, but just in case
+			return resolver.getDefaultGroup();
+		}
+	}
+
+
+	public String getPlayerPrefix(UUID uuid) {
+		return playerPrefixHandler.getPlayerPrefix(this, uuid);
+	}
+
+
+	public String getPlayerSuffix(UUID uuid) {
+		return playerPrefixHandler.getPlayerSuffix(this, uuid);
+	}
 
 }

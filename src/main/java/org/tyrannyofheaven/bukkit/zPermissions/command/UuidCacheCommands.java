@@ -22,20 +22,20 @@ import org.tyrannyofheaven.bukkit.util.uuid.UuidResolver;
 
 public class UuidCacheCommands {
 
-    private final UuidResolver uuidResolver;
+	private final UuidResolver uuidResolver;
 
-    public UuidCacheCommands(UuidResolver uuidResolver) {
-        this.uuidResolver = uuidResolver;
-    }
+	public UuidCacheCommands(UuidResolver uuidResolver) {
+		this.uuidResolver = uuidResolver;
+	}
 
-    @Command(value="invalidate", description="Invalidate cache entry for a single name")
-    public void invalidate(CommandSender sender, @Option(value="player", completer="player") String playerName) {
-        uuidResolver.invalidate(playerName);
-    }
+	@Command(value="invalidate", description="Invalidate cache entry for a single name")
+	public void invalidate(CommandSender sender, @Option(value="player", completer="player") String playerName) {
+		uuidResolver.invalidate(playerName);
+	}
 
-    @Command(value="invalidate-all", description="Invalidate all cache entries")
-    public void invalidate(CommandSender sender) {
-        uuidResolver.invalidateAll();
-    }
+	@Command(value="invalidate-all", description="Invalidate all cache entries")
+	public void invalidate(CommandSender sender) {
+		uuidResolver.invalidateAll();
+	}
 
 }

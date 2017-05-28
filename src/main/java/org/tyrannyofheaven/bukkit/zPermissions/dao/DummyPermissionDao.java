@@ -42,76 +42,76 @@ import org.tyrannyofheaven.bukkit.zPermissions.model.PermissionWorld;
  */
 public class DummyPermissionDao implements PermissionDao {
 
-    @Override
-    public void createRegion(PermissionRegion region) {
-    }
 
-    @Override
-    public void createWorld(PermissionWorld world) {
-    }
+	public void createRegion(PermissionRegion region) {
+	}
 
-    @Override
-    public void createEntity(PermissionEntity entity) {
-    }
 
-    @Override
-    public void createOrUpdateEntry(Entry entry) {
-    }
+	public void createWorld(PermissionWorld world) {
+	}
 
-    @Override
-    public void deleteEntry(Entry entry) {
-    }
 
-    @Override
-    public void createOrUpdateMembership(Membership membership) {
-    }
+	public void createEntity(PermissionEntity entity) {
+	}
 
-    @Override
-    public void setEntityParent(PermissionEntity entity, PermissionEntity parent) {
-    }
 
-    @Override
-    public void createOrUpdateInheritance(Inheritance inheritance) {
-    }
+	public void createOrUpdateEntry(Entry entry) {
+	}
 
-    @Override
-    public void deleteInheritance(Inheritance inheritance) {
-    }
 
-    @Override
-    public void setEntityPriority(PermissionEntity entity, int priority) {
-    }
+	public void deleteEntry(Entry entry) {
+	}
 
-    @Override
-    public void deleteRegions(Collection<PermissionRegion> regions) {
-    }
 
-    @Override
-    public void deleteWorlds(Collection<PermissionWorld> worlds) {
-    }
+	public void createOrUpdateMembership(Membership membership) {
+	}
 
-    @Override
-    public void deleteEntity(PermissionEntity entity) {
-    }
 
-    @Override
-    public void deleteMembership(Membership membership) {
-    }
+	public void setEntityParent(PermissionEntity entity, PermissionEntity parent) {
+	}
 
-    @Override
-    public void createOrUpdateMetadata(EntityMetadata metadata) {
-    }
 
-    @Override
-    public void deleteMetadata(EntityMetadata metadata) {
-    }
+	public void createOrUpdateInheritance(Inheritance inheritance) {
+	}
 
-    @Override
-    public void updateDisplayName(PermissionEntity entity) {
-    }
 
-    @Override
-    public void updateDisplayName(Membership membership) {
-    }
+	public void deleteInheritance(Inheritance inheritance) {
+	}
+
+
+	public void setEntityPriority(PermissionEntity entity, int priority) {
+	}
+
+
+	public void deleteRegions(Collection<PermissionRegion> regions) {
+	}
+
+
+	public void deleteWorlds(Collection<PermissionWorld> worlds) {
+	}
+
+
+	public void deleteEntity(PermissionEntity entity) {
+	}
+
+
+	public void deleteMembership(Membership membership) {
+	}
+
+
+	public void createOrUpdateMetadata(EntityMetadata metadata) {
+	}
+
+
+	public void deleteMetadata(EntityMetadata metadata) {
+	}
+
+
+	public void updateDisplayName(PermissionEntity entity) {
+	}
+
+
+	public void updateDisplayName(Membership membership) {
+	}
 
 }

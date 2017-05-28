@@ -32,84 +32,84 @@ import org.tyrannyofheaven.bukkit.zPermissions.dao.PermissionService;
  */
 public class DummyStorageStrategy implements StorageStrategy {
 
-    private final InMemoryPermissionService permissionService = new InMemoryPermissionService();
+	private final InMemoryPermissionService permissionService = new InMemoryPermissionService();
 
-    private final DummyPermissionDao permissionDao = new DummyPermissionDao(); // You may want to pass permissionService to the constructor
+	private final DummyPermissionDao permissionDao = new DummyPermissionDao(); // You may want to pass permissionService to the constructor
 
-    private final TransactionStrategy transactionStrategy = new NullTransactionStrategy();
+	private final TransactionStrategy transactionStrategy = new NullTransactionStrategy();
 
-    public DummyStorageStrategy() {
-        permissionService.setPermissionDao(permissionDao);
-    }
+	public DummyStorageStrategy() {
+		permissionService.setPermissionDao(permissionDao);
+	}
 
-    @Override
-    public void init(Map<String, Object> configMap) {
-        /*
-         * Perform initialization. Feel free to use blocking I/O.
-         * Simple implementations may simply call refresh(true, null)
-         */
-    }
 
-    @Override
-    public void shutdown() {
-        /*
-         * Perform cleanup or final I/O. Can also block.
-         */
-    }
+	public void init(Map<String, Object> configMap) {
+		/*
+		 * Perform initialization. Feel free to use blocking I/O.
+		 * Simple implementations may simply call refresh(true, null)
+		 */
+	}
 
-    @Override
-    public void refresh(boolean force, Runnable finishTask) {
-        /*
-         * Normal calls to this should NEVER block. (However, if called from init()
-         * above, it should block so initialization does not continue until
-         * everything has loaded. See AvajeStorageStrategy for an example of how
-         * this is handled.)
-         * 
-         * Only execute finishTask if in-memory representation changed
-         * (i.e. InMemoryPermissionService#setMemoryState() was called) and
-         * finishTask != null
-         *
-         * If you do execute finishTask, remember the contract dictates that it
-         * must execute in the main thread.
-         */
-    }
 
-    @Override
-    public PermissionService getPermissionService() {
-        /*
-         * Should return your PermissionService implementation, which should
-         * basically be an InMemoryPermissionService instance (unless you
-         * feel like re-implementing THAT interface)
-         */
-        return permissionService;
-    }
+	public void shutdown() {
+		/*
+		 * Perform cleanup or final I/O. Can also block.
+		 */
+	}
 
-    /*
-     * In the olden days (pre-1.0), there were two distinct TransactionStrategy
-     * instances. However, if you use InMemoryPermissionService as your
-     * PermissionService implementation, the distinction doesn't matter anymore.
-     *
-     * Both getters should return the same instance, and it will usually be
-     * one of two implementations:
-     * 
-     * NullTransactionStrategy - If you don't actually do any I/O in PermissionDao, e.g.
-     *   you just set a dirty flag and perform I/O elsewhere (similar to FilePermissionDao).
-     * AsyncTransactionStrategy - If your store is transactional (e.g. requires a real
-     *   TransactionStrategy implementation) and your I/O would normally block.
-     *   Databases fall under this. (Also see AvajePermissionDao.)
-     * 
-     * If your I/O is blocking but not transactional, you can probably get away
-     * with using NullTransactionStrategy.
-     */
 
-    @Override
-    public TransactionStrategy getTransactionStrategy() {
-        return transactionStrategy;
-    }
+	public void refresh(boolean force, Runnable finishTask) {
+		/*
+		 * Normal calls to this should NEVER block. (However, if called from init()
+		 * above, it should block so initialization does not continue until
+		 * everything has loaded. See AvajeStorageStrategy for an example of how
+		 * this is handled.)
+		 * 
+		 * Only execute finishTask if in-memory representation changed
+		 * (i.e. InMemoryPermissionService#setMemoryState() was called) and
+		 * finishTask != null
+		 *
+		 * If you do execute finishTask, remember the contract dictates that it
+		 * must execute in the main thread.
+		 */
+	}
 
-    @Override
-    public TransactionStrategy getRetryingTransactionStrategy() {
-        return transactionStrategy;
-    }
+
+	public PermissionService getPermissionService() {
+		/*
+		 * Should return your PermissionService implementation, which should
+		 * basically be an InMemoryPermissionService instance (unless you
+		 * feel like re-implementing THAT interface)
+		 */
+		return permissionService;
+	}
+
+	/*
+	 * In the olden days (pre-1.0), there were two distinct TransactionStrategy
+	 * instances. However, if you use InMemoryPermissionService as your
+	 * PermissionService implementation, the distinction doesn't matter anymore.
+	 *
+	 * Both getters should return the same instance, and it will usually be
+	 * one of two implementations:
+	 * 
+	 * NullTransactionStrategy - If you don't actually do any I/O in PermissionDao, e.g.
+	 *   you just set a dirty flag and perform I/O elsewhere (similar to FilePermissionDao).
+	 * AsyncTransactionStrategy - If your store is transactional (e.g. requires a real
+	 *   TransactionStrategy implementation) and your I/O would normally block.
+	 *   Databases fall under this. (Also see AvajePermissionDao.)
+	 * 
+	 * If your I/O is blocking but not transactional, you can probably get away
+	 * with using NullTransactionStrategy.
+	 */
+
+
+	public TransactionStrategy getTransactionStrategy() {
+		return transactionStrategy;
+	}
+
+
+	public TransactionStrategy getRetryingTransactionStrategy() {
+		return transactionStrategy;
+	}
 
 }

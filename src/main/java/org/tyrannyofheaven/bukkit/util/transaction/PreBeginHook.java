@@ -22,13 +22,13 @@ package org.tyrannyofheaven.bukkit.util.transaction;
  */
 public interface PreBeginHook {
 
-    /**
-     * Callback called immediately before transaction begins. If you want to
-     * abort, throw an exception
-     * 
-     * @param readOnly the read-only flag for this transaction
-     * @throws Exception an exception signifying that a rollback should be performed
-     */
-    public void preBegin(boolean readOnly) throws Exception;
+	/**
+	 * Callback called immediately before transaction begins. If you want to
+	 * abort, throw an exception
+	 * 
+	 * @param readOnly the read-only flag for this transaction
+	 * @throws Exception an exception signifying that a rollback should be performed
+	 */
+	public void preBegin(boolean readOnly) throws Exception;
 
 }

@@ -34,62 +34,62 @@ import com.avaje.ebean.config.UnderscoreNamingConvention;
  */
 public class ToHNamingConvention extends UnderscoreNamingConvention {
 
-    private final Map<String, String> tableNames = new HashMap<>();
+	private final Map<String, String> tableNames = new HashMap<String, String>();
 
-    private final String defaultSchemaTableName;
+	private final String defaultSchemaTableName;
 
-    /**
-     * Construct a new instance and configure it so it only accepts table name
-     * mappings of the classes specified by {@link JavaPlugin#getDatabaseClasses()}.
-     * 
-     * @param plugin the JavaPlugin subclass
-     */
-    public ToHNamingConvention(ZPermissionsPlugin plugin, String defaultSchemaTableName) {
-        // Set up null placeholders
-        for (Class<?> clazz : plugin.getDatabaseClasses()) {
-            tableNames.put(clazz.getSimpleName(), null);
-        }
-        this.defaultSchemaTableName = defaultSchemaTableName;
-    }
-    
-    /**
-     * Clear all table name mappings.
-     */
-    public void clearTableNames() {
-        for (Map.Entry<String, String> me : tableNames.entrySet()) {
-            me.setValue(null);
-        }
-    }
+	/**
+	 * Construct a new instance and configure it so it only accepts table name
+	 * mappings of the classes specified by {@link JavaPlugin#getDatabaseClasses()}.
+	 * 
+	 * @param plugin the JavaPlugin subclass
+	 */
+	public ToHNamingConvention(ZPermissionsPlugin plugin, String defaultSchemaTableName) {
+		// Set up null placeholders
+		for (Class<?> clazz : plugin.getDatabaseClasses()) {
+			tableNames.put(clazz.getSimpleName(), null);
+		}
+		this.defaultSchemaTableName = defaultSchemaTableName;
+	}
 
-    /**
-     * Add a table name mapping for the given class.
-     * 
-     * @param className the simple name of the class
-     * @param tableName the table name. May be qualified with catalog/schema. May be null.
-     */
-    public void setTableName(String className, String tableName) {
-        if (!ToHStringUtils.hasText(tableName))
-            tableName = null; // Normalize
-        if (tableNames.containsKey(className)) {
-            tableNames.put(className, tableName);
-        }
-    }
+	/**
+	 * Clear all table name mappings.
+	 */
+	public void clearTableNames() {
+		for (Map.Entry<String, String> me : tableNames.entrySet()) {
+			me.setValue(null);
+		}
+	}
 
-    /* (non-Javadoc)
-     * @see com.avaje.ebean.config.AbstractNamingConvention#getTableName(java.lang.Class)
-     */
-    @Override
-    public TableName getTableName(Class<?> beanClass) {
-        String qualifiedTableName = tableNames.get(beanClass.getSimpleName());
-        if (qualifiedTableName != null) {
-            return new TableName(qualifiedTableName);
-        }
-        else if (beanClass == ToHSchemaVersion.class) {
-            // Special handling of default name for schema version table
-            TableName tableName = super.getTableName(beanClass);
-            return new TableName(tableName.getCatalog(), tableName.getSchema(), defaultSchemaTableName);
-        }
-        return super.getTableName(beanClass);
-    }
+	/**
+	 * Add a table name mapping for the given class.
+	 * 
+	 * @param className the simple name of the class
+	 * @param tableName the table name. May be qualified with catalog/schema. May be null.
+	 */
+	public void setTableName(String className, String tableName) {
+		if (!ToHStringUtils.hasText(tableName))
+			tableName = null; // Normalize
+		if (tableNames.containsKey(className)) {
+			tableNames.put(className, tableName);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see com.avaje.ebean.config.AbstractNamingConvention#getTableName(java.lang.Class)
+	 */
+	@Override
+	public TableName getTableName(Class<?> beanClass) {
+		String qualifiedTableName = tableNames.get(beanClass.getSimpleName());
+		if (qualifiedTableName != null) {
+			return new TableName(qualifiedTableName);
+		}
+		else if (beanClass == ToHSchemaVersion.class) {
+			// Special handling of default name for schema version table
+			TableName tableName = super.getTableName(beanClass);
+			return new TableName(tableName.getCatalog(), tableName.getSchema(), defaultSchemaTableName);
+		}
+		return super.getTableName(beanClass);
+	}
 
 }

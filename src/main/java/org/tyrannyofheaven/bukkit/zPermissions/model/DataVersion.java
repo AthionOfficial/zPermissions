@@ -31,56 +31,56 @@ import javax.persistence.TemporalType;
 @Entity
 public class DataVersion {
 
-    private String name;
+	private String name;
 
-    private long version;
+	private long version;
 
-    private Date timestamp;
+	private Date timestamp;
 
-    @Id
-    public String getName() {
-        return name;
-    }
+	@Id
+	public String getName() {
+		return name;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    @Column(nullable=false)
-    public long getVersion() {
-        return version;
-    }
+	@Column(nullable=false)
+	public long getVersion() {
+		return version;
+	}
 
-    public void setVersion(long version) {
-        this.version = version;
-    }
+	public void setVersion(long version) {
+		this.version = version;
+	}
 
-    @Column(nullable=false)
-    @Temporal(TemporalType.TIMESTAMP)
-    public Date getTimestamp() {
-        return timestamp;
-    }
+	@Column(nullable=false)
+	@Temporal(TemporalType.TIMESTAMP)
+	public Date getTimestamp() {
+		return timestamp;
+	}
 
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
-    }
+	public void setTimestamp(Date timestamp) {
+		this.timestamp = timestamp;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (!(obj instanceof DataVersion)) return false;
-        DataVersion o = (DataVersion)obj;
-        return getName().equals(o.getName());
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) return true;
+		if (!(obj instanceof DataVersion)) return false;
+		DataVersion o = (DataVersion)obj;
+		return getName().equals(o.getName());
+	}
 
-    @Override
-    public int hashCode() {
-        return getName().hashCode();
-    }
+	@Override
+	public int hashCode() {
+		return getName().hashCode();
+	}
 
-    @Override
-    public String toString() {
-        return String.format("%s #%d (%s)", getName(), getVersion(), getTimestamp());
-    }
+	@Override
+	public String toString() {
+		return String.format("%s #%d (%s)", getName(), getVersion(), getTimestamp());
+	}
 
 }

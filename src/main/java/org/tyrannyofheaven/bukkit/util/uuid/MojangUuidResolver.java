@@ -55,7 +55,6 @@ public class MojangUuidResolver implements UuidResolver {
 				});
 	}
 
-	@Override
 	public UuidDisplayName resolve(String username) {
 		if (!hasText(username))
 			throw new IllegalArgumentException("username must have a value");
@@ -70,7 +69,6 @@ public class MojangUuidResolver implements UuidResolver {
 		}
 	}
 
-	@Override
 	public UuidDisplayName resolve(String username, boolean cacheOnly) {
 		if (!hasText(username))
 			throw new IllegalArgumentException("username must have a value");
@@ -83,16 +81,15 @@ public class MojangUuidResolver implements UuidResolver {
 		else return resolve(username); // Same as normal version
 	}
 
-	@Override
 	public Map<String, UuidDisplayName> resolve(Collection<String> usernames) throws Exception {
 		if (usernames == null)
 			throw new IllegalArgumentException("usernames cannot be null");
 
-		Map<String, UuidDisplayName> result = new LinkedHashMap<>();
+		Map<String, UuidDisplayName> result = new LinkedHashMap<String, UuidDisplayName>();
 
 		final int BATCH_SIZE = 97; // Should be <= Mojang's AccountsClient's PROFILES_PER_REQUEST (100)
 
-		for (List<String> sublist : Lists.partition(new ArrayList<>(usernames), BATCH_SIZE)) {
+		for (List<String> sublist : Lists.partition(new ArrayList<String>(usernames), BATCH_SIZE)) {
 			List<Profile> searchResult = searchProfiles(sublist);
 			for (Profile profile : searchResult) {
 				String username = profile.getName();
@@ -104,7 +101,6 @@ public class MojangUuidResolver implements UuidResolver {
 		return result;
 	}
 
-	@Override
 	public void preload(String username, UUID uuid) {
 		if (!hasText(username))
 			throw new IllegalArgumentException("username must have a value");
@@ -114,7 +110,6 @@ public class MojangUuidResolver implements UuidResolver {
 		cache.asMap().put(username.toLowerCase(), new UuidDisplayName(uuid, username));
 	}
 
-	@Override
 	public void invalidate(String username) {
 		if (!hasText(username))
 			throw new IllegalArgumentException("username must have a value");
@@ -122,7 +117,6 @@ public class MojangUuidResolver implements UuidResolver {
 		cache.invalidate(username.toLowerCase());
 	}
 
-	@Override
 	public void invalidateAll() {
 		cache.invalidateAll();
 	}
@@ -188,7 +182,7 @@ public class MojangUuidResolver implements UuidResolver {
 	}
 
 	private List<Profile> convertResponse(JSONArray profiles) {
-		List<Profile> result = new ArrayList<>();
+		List<Profile> result = new ArrayList<Profile>();
 		for (Object obj : profiles) {
 			JSONObject jsonProfile = (JSONObject)obj;
 			String id = (String)jsonProfile.get("id");

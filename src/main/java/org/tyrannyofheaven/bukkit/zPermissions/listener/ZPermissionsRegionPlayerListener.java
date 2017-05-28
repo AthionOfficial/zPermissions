@@ -32,33 +32,33 @@ import org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsCore;
  */
 public class ZPermissionsRegionPlayerListener implements Listener {
 
-    private final ZPermissionsCore core;
+	private final ZPermissionsCore core;
 
-    public ZPermissionsRegionPlayerListener(ZPermissionsCore plugin) {
-        this.core = plugin;
-    }
+	public ZPermissionsRegionPlayerListener(ZPermissionsCore plugin) {
+		this.core = plugin;
+	}
 
-    @EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
-    public void onPlayerTeleport(PlayerTeleportEvent event) {
-        // Conditionally update if world or region changed
-        core.setBukkitPermissions(event.getPlayer(), event.getTo(), false, RefreshCause.MOVEMENT);
-    }
+	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
+	public void onPlayerTeleport(PlayerTeleportEvent event) {
+		// Conditionally update if world or region changed
+		core.setBukkitPermissions(event.getPlayer(), event.getTo(), false, RefreshCause.MOVEMENT);
+	}
 
-    @EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
-    public void onPlayerMove(PlayerMoveEvent event) {
-        // Only bother if player actually moved to a new block
-        if (event.getFrom().getBlockX() != event.getTo().getBlockX() ||
-                event.getFrom().getBlockY() != event.getTo().getBlockY() ||
-                event.getFrom().getBlockZ() != event.getTo().getBlockZ()) {
-            // Conditionally update if containing regions changed
-            core.setBukkitPermissions(event.getPlayer(), event.getTo(), false, RefreshCause.MOVEMENT);
-        }
-    }
+	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
+	public void onPlayerMove(PlayerMoveEvent event) {
+		// Only bother if player actually moved to a new block
+		if (event.getFrom().getBlockX() != event.getTo().getBlockX() ||
+				event.getFrom().getBlockY() != event.getTo().getBlockY() ||
+				event.getFrom().getBlockZ() != event.getTo().getBlockZ()) {
+			// Conditionally update if containing regions changed
+			core.setBukkitPermissions(event.getPlayer(), event.getTo(), false, RefreshCause.MOVEMENT);
+		}
+	}
 
-    @EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
-    public void onPlayerRespawn(PlayerRespawnEvent event) {
-        // Conditionally update if respawning in a different world or region
-        core.setBukkitPermissions(event.getPlayer(), event.getRespawnLocation(), false, RefreshCause.MOVEMENT);
-    }
+	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
+	public void onPlayerRespawn(PlayerRespawnEvent event) {
+		// Conditionally update if respawning in a different world or region
+		core.setBukkitPermissions(event.getPlayer(), event.getRespawnLocation(), false, RefreshCause.MOVEMENT);
+	}
 
 }

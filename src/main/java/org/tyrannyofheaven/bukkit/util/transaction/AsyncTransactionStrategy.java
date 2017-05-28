@@ -26,72 +26,76 @@ import java.util.concurrent.Executor;
  */
 public class AsyncTransactionStrategy implements TransactionStrategy {
 
-    private final TransactionExecutor transactionExecutor;
+	private final TransactionExecutor transactionExecutor;
 
-    private final Executor executor;
+	private final Executor executor;
 
-    private final PreBeginHook preBeginHook;
+	private final PreBeginHook preBeginHook;
 
-    public AsyncTransactionStrategy(TransactionStrategy transactionStrategy, Executor executor, PreBeginHook preBeginHook) {
-        transactionExecutor = new TransactionExecutor(transactionStrategy);
-        this.executor = executor;
-        this.preBeginHook = preBeginHook;
-    }
+	public AsyncTransactionStrategy(TransactionStrategy transactionStrategy, Executor executor, PreBeginHook preBeginHook) {
+		transactionExecutor = new TransactionExecutor(transactionStrategy);
+		this.executor = executor;
+		this.preBeginHook = preBeginHook;
+	}
 
-    public AsyncTransactionStrategy(TransactionStrategy transactionStrategy, Executor executor) {
-        this(transactionStrategy, executor, null);
-    }
+	public AsyncTransactionStrategy(TransactionStrategy transactionStrategy, Executor executor) {
+		this(transactionStrategy, executor, null);
+	}
 
-    public Executor getExecutor() {
-        return transactionExecutor; // and by executor, we actually mean transactionExecutor
-    }
+	public Executor getExecutor() {
+		return transactionExecutor; // and by executor, we actually mean transactionExecutor
+	}
 
-    // Retrieve pre-begin hook
-    private PreBeginHook getPreBeginHook() {
-        return preBeginHook;
-    }
+	// Retrieve pre-begin hook
+	private PreBeginHook getPreBeginHook() {
+		return preBeginHook;
+	}
 
-    /* (non-Javadoc)
-     * @see org.tyrannyofheaven.bukkit.util.transaction.TransactionStrategy#execute(org.tyrannyofheaven.bukkit.util.transaction.TransactionCallback)
-     */
-    @Override
-    public <T> T execute(TransactionCallback<T> callback) {
-        return execute(callback, false);
-    }
+	/* (non-Javadoc)
+	 * @see org.tyrannyofheaven.bukkit.util.transaction.TransactionStrategy#execute(org.tyrannyofheaven.bukkit.util.transaction.TransactionCallback)
+	 */
+	public <T> T execute(TransactionCallback<T> callback) {
+		return execute(callback, false);
+	}
 
-    /* (non-Javadoc)
-     * @see org.tyrannyofheaven.bukkit.util.transaction.TransactionStrategy#execute(org.tyrannyofheaven.bukkit.util.transaction.TransactionCallback, boolean)
-     */
-    @Override
-    public <T> T execute(TransactionCallback<T> callback, boolean readOnly) {
-        if (callback == null)
-            throw new IllegalArgumentException("callback cannot be null");
-        try {
-            // Start collecting runnables
-            if (getPreBeginHook() != null)
-                getPreBeginHook().preBegin(readOnly);
-            transactionExecutor.begin(readOnly);
-            boolean success = false; // so we know we executed callback successfully
-            try {
-                T result = callback.doInTransaction();
-                success = true;
-                return result;
-            }
-            finally {
-                TransactionRunnable transactionRunnable = transactionExecutor.end();
-                if (!transactionRunnable.isEmpty() && success) {
-                    // Got something, execute it async
-                    executor.execute(transactionRunnable);
-                }
-            }
+	/* (non-Javadoc)
+	 * @see org.tyrannyofheaven.bukkit.util.transaction.TransactionStrategy#execute(org.tyrannyofheaven.bukkit.util.transaction.TransactionCallback, boolean)
+	 */
+	public <T> T execute(TransactionCallback<T> callback, boolean readOnly) {
+		if (callback == null)
+			throw new IllegalArgumentException("callback cannot be null");
+		try {
+			// Start collecting runnables
+			if (getPreBeginHook() != null)
+				getPreBeginHook().preBegin(readOnly);
+			transactionExecutor.begin(readOnly);
+			boolean success = false; // so we know we executed callback successfully
+			try {
+				T result = callback.doInTransaction();
+				success = true;
+				return result;
+			}
+			finally {
+				TransactionRunnable transactionRunnable = transactionExecutor.end();
+				if (!transactionRunnable.isEmpty() && success) {
+					// Got something, execute it async
+					executor.execute(transactionRunnable);
+				}
+			}
+		}
+		catch (RuntimeException e) {
+			// No need to wrap these, just re-throw
+			throw e;
+		}
+        catch (Error e){
+        	throw e;
         }
-        catch (Error | RuntimeException e) {
-            // No need to wrap these, just re-throw
-            throw e;
+        catch (Error e){
+        	throw e;
         }
-        catch (Throwable t) {
-            throw new TransactionException(t);
-        }
-    }
+		catch (Throwable t) {
+			throw new TransactionException(t);
+		}
+	}
 
 }

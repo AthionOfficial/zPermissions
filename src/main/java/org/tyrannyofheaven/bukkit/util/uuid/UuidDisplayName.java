@@ -18,25 +18,25 @@ package org.tyrannyofheaven.bukkit.util.uuid;
 import java.util.UUID;
 
 public class UuidDisplayName {
-    
-    private final UUID uuid;
-    
-    private final String displayName;
 
-    public UuidDisplayName(UUID uuid, String displayName) {
-        if (uuid == null)
-            throw new IllegalArgumentException("uuid cannot be null");
-        
-        this.uuid = uuid;
-        this.displayName = displayName;
-    }
+	private final UUID uuid;
 
-    public UUID getUuid() {
-        return uuid;
-    }
+	private final String displayName;
 
-    public String getDisplayName() {
-        return displayName;
-    }
-    
+	public UuidDisplayName(UUID uuid, String displayName) {
+		if (uuid == null)
+			throw new IllegalArgumentException("uuid cannot be null");
+
+		this.uuid = uuid;
+		this.displayName = displayName;
+	}
+
+	public UUID getUuid() {
+		return uuid;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
 }

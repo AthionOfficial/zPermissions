@@ -25,85 +25,81 @@ import org.bukkit.conversations.Prompt;
 
 class PagerPrompt implements Prompt {
 
-    // Seems saner to keep our state in instance variables rather than a ConversationContext.
-    // However as a consequence, ConversationFactories are not reusable.
-    // Maybe if the Conversation's first prompt were cloned...
+	// Seems saner to keep our state in instance variables rather than a ConversationContext.
+	// However as a consequence, ConversationFactories are not reusable.
+	// Maybe if the Conversation's first prompt were cloned...
 
-    private final List<String> lines = new LinkedList<>();
+	private final List<String> lines = new LinkedList<String>();
 
-    private final int linesPerPage;
+	private final int linesPerPage;
 
-    private final int totalPages;
+	private final int totalPages;
 
-    private int currentLine;
+	private int currentLine;
 
-    private int currentPage;
+	private int currentPage;
 
-    private boolean shouldBlock;
+	private boolean shouldBlock;
 
-    private static final Prompt ABORTED_PROMPT = new MessagePrompt() {
+	private static final Prompt ABORTED_PROMPT = new MessagePrompt() {
 
-        @Override
-        public String getPromptText(ConversationContext context) {
-            return ChatColor.YELLOW + "Stopping.";
-        }
+		public String getPromptText(ConversationContext context) {
+			return ChatColor.YELLOW + "Stopping.";
+		}
 
-        @Override
-        protected Prompt getNextPrompt(ConversationContext context) {
-            return Prompt.END_OF_CONVERSATION;
-        }
-        
-    };
+		@Override
+		protected Prompt getNextPrompt(ConversationContext context) {
+			return Prompt.END_OF_CONVERSATION;
+		}
 
-    PagerPrompt(List<String> lines, int linesPerPage) {
-        if (lines == null || lines.isEmpty())
-            throw new IllegalArgumentException("lines cannot be empty");
-        this.lines.addAll(lines);
-        this.linesPerPage = linesPerPage - 1; // Room for prompt
-        
-        totalPages = (this.lines.size() + this.linesPerPage - 1) / this.linesPerPage;
-    }
+	};
 
-    @Override
-    public String getPromptText(ConversationContext context) {
-        if (currentLine < linesPerPage) {
-            // Next line
-            String prompt = lines.remove(0);
-            currentLine++;
-            shouldBlock = false;
-            return prompt;
-        }
-        else {
-            // Next page
-            currentLine = 0;
-            currentPage++;
-            shouldBlock = true;
-            return ChatColor.YELLOW + String.format("Page %d of %d. More? y/n", currentPage, totalPages);
-        }
-    }
+	PagerPrompt(List<String> lines, int linesPerPage) {
+		if (lines == null || lines.isEmpty())
+			throw new IllegalArgumentException("lines cannot be empty");
+		this.lines.addAll(lines);
+		this.linesPerPage = linesPerPage - 1; // Room for prompt
 
-    @Override
-    public boolean blocksForInput(ConversationContext context) {
-        return shouldBlock;
-    }
+		totalPages = (this.lines.size() + this.linesPerPage - 1) / this.linesPerPage;
+	}
 
-    @Override
-    public Prompt acceptInput(ConversationContext context, String input) {
-        // Sanitize
-        if (input != null) {
-            input = input.toLowerCase().trim();
-            // Only care about first char
-            if (!input.isEmpty())
-                input = input.substring(0, 1);
-        }
+	public String getPromptText(ConversationContext context) {
+		if (currentLine < linesPerPage) {
+			// Next line
+			String prompt = lines.remove(0);
+			currentLine++;
+			shouldBlock = false;
+			return prompt;
+		}
+		else {
+			// Next page
+			currentLine = 0;
+			currentPage++;
+			shouldBlock = true;
+			return ChatColor.YELLOW + String.format("Page %d of %d. More? y/n", currentPage, totalPages);
+		}
+	}
 
-        if ("n".equals(input)) {
-            return ABORTED_PROMPT;
-        }
-        else {
-            // Not blocking
-            return !lines.isEmpty() ? this : Prompt.END_OF_CONVERSATION;
-        }
-    }
+	public boolean blocksForInput(ConversationContext context) {
+		return shouldBlock;
+	}
+
+	public Prompt acceptInput(ConversationContext context, String input) {
+		// Sanitize
+		if (input != null) {
+			input = input.toLowerCase().trim();
+			// Only care about first char
+			if (!input.isEmpty())
+				input = input.substring(0, 1);
+		}
+
+		if ("n".equals(input)) {
+			return ABORTED_PROMPT;
+		}
+		else {
+			// Not blocking
+			return !lines.isEmpty() ? this : Prompt.END_OF_CONVERSATION;
+		}
+	}
 
 }

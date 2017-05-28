@@ -26,57 +26,57 @@ import java.util.Map;
  */
 public final class CommandSession {
 
-    private final Map<String, Object> data = new HashMap<>();
-    
-    /**
-     * Retrieves a session value.
-     * 
-     * @param name the name of the value
-     * @return the value or null
-     */
-    public Object getValue(String name) {
-        return data.get(name);
-    }
+	private final Map<String, Object> data = new HashMap<String, Object>();
 
-    /**
-     * Retrieves a session value. Throws an exception if the value is not found
-     * or is of the wrong type.
-     * 
-     * @param <T> the value type
-     * @param name the name of the value
-     * @param clazz the expected value type
-     * @return the value
-     */
-    public <T> T getValue(String name, Class<T> clazz) {
-        Object obj = data.get(name);
-        if (obj != null) {
-            if (clazz.isAssignableFrom(obj.getClass())) {
-                return clazz.cast(obj);
-            }
-            else {
-                throw new IllegalArgumentException(String.format("Session value '%s' not assignable from type %s", name, clazz));
-            }
-        }
-        throw new IllegalArgumentException(String.format("Missing session value '%s'", name));
-    }
+	/**
+	 * Retrieves a session value.
+	 * 
+	 * @param name the name of the value
+	 * @return the value or null
+	 */
+	public Object getValue(String name) {
+		return data.get(name);
+	}
 
-    /**
-     * Sets a session value.
-     * 
-     * @param name the name of the value
-     * @param value the value to set
-     */
-    public void setValue(String name, Object value) {
-        data.put(name, value);
-    }
+	/**
+	 * Retrieves a session value. Throws an exception if the value is not found
+	 * or is of the wrong type.
+	 * 
+	 * @param <T> the value type
+	 * @param name the name of the value
+	 * @param clazz the expected value type
+	 * @return the value
+	 */
+	public <T> T getValue(String name, Class<T> clazz) {
+		Object obj = data.get(name);
+		if (obj != null) {
+			if (clazz.isAssignableFrom(obj.getClass())) {
+				return clazz.cast(obj);
+			}
+			else {
+				throw new IllegalArgumentException(String.format("Session value '%s' not assignable from type %s", name, clazz));
+			}
+		}
+		throw new IllegalArgumentException(String.format("Missing session value '%s'", name));
+	}
 
-    /**
-     * Removes a session value.
-     * 
-     * @param name the name of the value
-     */
-    public void removeValue(String name) {
-        data.remove(name);
-    }
+	/**
+	 * Sets a session value.
+	 * 
+	 * @param name the name of the value
+	 * @param value the value to set
+	 */
+	public void setValue(String name, Object value) {
+		data.put(name, value);
+	}
+
+	/**
+	 * Removes a session value.
+	 * 
+	 * @param name the name of the value
+	 */
+	public void removeValue(String name) {
+		data.remove(name);
+	}
 
 }

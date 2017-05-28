@@ -30,51 +30,51 @@ import org.bukkit.entity.Player;
  */
 public interface ZPermissionsCore {
 
-    // Refreshing the attachments of a set of players
+	// Refreshing the attachments of a set of players
 
-    public void refreshPlayer(UUID uuid, RefreshCause cause);
+	public void refreshPlayer(UUID uuid, RefreshCause cause);
 
-    public void refreshPlayers(); // Also invalidates metadata cache of refreshed players
+	public void refreshPlayers(); // Also invalidates metadata cache of refreshed players
 
-    // NB called from async thread
-    public void refreshPlayers(Collection<UUID> playerUuids); // Also invalidates metadata cache of refreshed players
+	// NB called from async thread
+	public void refreshPlayers(Collection<UUID> playerUuids); // Also invalidates metadata cache of refreshed players
 
-    public boolean refreshAffectedPlayers(String groupName); // Also invalidates metadata cache of refreshed players
+	public boolean refreshAffectedPlayers(String groupName); // Also invalidates metadata cache of refreshed players
 
-    // Refreshing the temporary group membership timer
+	// Refreshing the temporary group membership timer
 
-    public void refreshExpirations();
+	public void refreshExpirations();
 
-    public void refreshExpirations(UUID uuid);
+	public void refreshExpirations(UUID uuid);
 
-    // Config + storage reload
+	// Config + storage reload
 
-    public void reload();
+	public void reload();
 
-    // Storage reload
+	// Storage reload
 
-    public void refresh(boolean force, Runnable runnable);
+	public void refresh(boolean force, Runnable runnable);
 
-    // Player attachment control
+	// Player attachment control
 
-    public void setBukkitPermissions(Player player, Location location, boolean force, RefreshCause eventCause);
+	public void setBukkitPermissions(Player player, Location location, boolean force, RefreshCause eventCause);
 
-    public void removeBukkitPermissions(Player player, boolean recalculate);
+	public void removeBukkitPermissions(Player player, boolean recalculate);
 
-    // Utility
-    
-    public Set<String> getRegions(Location location, Player player);
+	// Utility
 
-    public void logExternalChange(String message, Object...args);
+	public Set<String> getRegions(Location location, Player player);
 
-    public void updateDisplayName(UUID uuid, String displayName);
+	public void logExternalChange(String message, Object...args);
 
-    public void handleExplicitDefaultGroupMembership(final UUID uuid, final String displayName);
+	public void updateDisplayName(UUID uuid, String displayName);
 
-    // Metadata cache management
-    
-    public void invalidateMetadataCache(String name, UUID uuid, boolean group);
+	public void handleExplicitDefaultGroupMembership(final UUID uuid, final String displayName);
 
-    public void invalidateMetadataCache();
+	// Metadata cache management
+
+	public void invalidateMetadataCache(String name, UUID uuid, boolean group);
+
+	public void invalidateMetadataCache();
 
 }

@@ -28,62 +28,62 @@ import org.tyrannyofheaven.bukkit.util.command.ToHCommandExecutor;
  */
 public class ToHStringUtils {
 
-    private ToHStringUtils() {
-        throw new AssertionError("Don't instantiate me!");
-    }
+	private ToHStringUtils() {
+		throw new AssertionError("Don't instantiate me!");
+	}
 
-    /**
-     * Returns true if text is non-null and contains non-whitespace characters.
-     * 
-     * @param text the string to test
-     * @return true if text is non-null and contains non-whitespace characters
-     */
-    public static boolean hasText(String text) {
-        return text != null && text.trim().length() > 0;
-    }
+	/**
+	 * Returns true if text is non-null and contains non-whitespace characters.
+	 * 
+	 * @param text the string to test
+	 * @return true if text is non-null and contains non-whitespace characters
+	 */
+	public static boolean hasText(String text) {
+		return text != null && text.trim().length() > 0;
+	}
 
-    /**
-     * Returns a string representation of each object, with each object delimited
-     * by the given delimiter. Similar to "string join" in other languages.
-     * 
-     * @param delimiter the string delimiter
-     * @param coll a collection of objects
-     * @return the delimited string
-     */
-    public static String delimitedString(String delimiter, Collection<?> coll) {
-        StringBuilder sb = new StringBuilder();
-        for (Iterator<?> i = coll.iterator(); i.hasNext();) {
-            sb.append(i.next());
-            if (i.hasNext())
-                sb.append(delimiter);
-        }
-        return sb.toString();
-    }
+	/**
+	 * Returns a string representation of each object, with each object delimited
+	 * by the given delimiter. Similar to "string join" in other languages.
+	 * 
+	 * @param delimiter the string delimiter
+	 * @param coll a collection of objects
+	 * @return the delimited string
+	 */
+	public static String delimitedString(String delimiter, Collection<?> coll) {
+		StringBuilder sb = new StringBuilder();
+		for (Iterator<?> i = coll.iterator(); i.hasNext();) {
+			sb.append(i.next());
+			if (i.hasNext())
+				sb.append(delimiter);
+		}
+		return sb.toString();
+	}
 
-    /**
-     * Returns a string representation of each object, with each object delimited
-     * by the given delimiter. Similar to "string join" in other languages.
-     * 
-     * @param delimiter the string delimiter
-     * @param objs an array of objects
-     * @return the delimited string
-     */
-    public static String delimitedString(String delimiter, Object... objs) {
-        return delimitedString(delimiter, Arrays.asList(objs));
-    }
+	/**
+	 * Returns a string representation of each object, with each object delimited
+	 * by the given delimiter. Similar to "string join" in other languages.
+	 * 
+	 * @param delimiter the string delimiter
+	 * @param objs an array of objects
+	 * @return the delimited string
+	 */
+	public static String delimitedString(String delimiter, Object... objs) {
+		return delimitedString(delimiter, Arrays.asList(objs));
+	}
 
-    /**
-     * Quote a string suitable for the "quote aware" parser of {@link ToHCommandExecutor}.
-     * 
-     * @param input the input string
-     * @return the possibly escaped and quoted string
-     */
-    public static String quoteArgForCommand(String input) {
-        input = input.replaceAll("\\\\", "\\\\\\\\").replaceAll("\"", "\\\\\"");
-        if (input.matches(".*\\s.*"))
-            return "\"" + input + "\""; // Enclose in quotes
-        else
-            return input;
-    }
+	/**
+	 * Quote a string suitable for the "quote aware" parser of {@link ToHCommandExecutor}.
+	 * 
+	 * @param input the input string
+	 * @return the possibly escaped and quoted string
+	 */
+	public static String quoteArgForCommand(String input) {
+		input = input.replaceAll("\\\\", "\\\\\\\\").replaceAll("\"", "\\\\\"");
+		if (input.matches(".*\\s.*"))
+			return "\"" + input + "\""; // Enclose in quotes
+		else
+			return input;
+	}
 
 }

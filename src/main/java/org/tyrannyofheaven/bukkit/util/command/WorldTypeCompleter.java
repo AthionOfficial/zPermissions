@@ -31,18 +31,17 @@ import org.bukkit.util.StringUtil;
  */
 class WorldTypeCompleter implements TypeCompleter {
 
-    @Override
-    public List<String> complete(Class<?> clazz, String arg, CommandSender sender, String partial) {
-        if (clazz == String.class) {
-            List<String> result = new ArrayList<>();
-            for (World world : Bukkit.getWorlds()) {
-                if (StringUtil.startsWithIgnoreCase(world.getName(), partial))
-                    result.add(world.getName());
-            }
-            Collections.sort(result);
-            return result;
-        }
-        return Collections.emptyList();
-    }
+	public List<String> complete(Class<?> clazz, String arg, CommandSender sender, String partial) {
+		if (clazz == String.class) {
+			List<String> result = new ArrayList<String>();
+			for (World world : Bukkit.getWorlds()) {
+				if (StringUtil.startsWithIgnoreCase(world.getName(), partial))
+					result.add(world.getName());
+			}
+			Collections.sort(result);
+			return result;
+		}
+		return Collections.emptyList();
+	}
 
 }

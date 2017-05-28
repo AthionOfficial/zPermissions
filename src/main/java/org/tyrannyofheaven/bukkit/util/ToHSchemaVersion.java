@@ -33,45 +33,45 @@ import javax.persistence.TemporalType;
 @Entity
 public class ToHSchemaVersion {
 
-    private long version;
-    
-    private Date timestamp;
+	private long version;
 
-    @Id
-    public long getVersion() {
-        return version;
-    }
+	private Date timestamp;
 
-    public void setVersion(long version) {
-        this.version = version;
-    }
+	@Id
+	public long getVersion() {
+		return version;
+	}
 
-    @Column(nullable=false)
-    @Temporal(TemporalType.TIMESTAMP)
-    public Date getTimestamp() {
-        return timestamp;
-    }
+	public void setVersion(long version) {
+		this.version = version;
+	}
 
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
-    }
+	@Column(nullable=false)
+	@Temporal(TemporalType.TIMESTAMP)
+	public Date getTimestamp() {
+		return timestamp;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (!(obj instanceof ToHSchemaVersion)) return false;
-        ToHSchemaVersion o = (ToHSchemaVersion)obj;
-        return getVersion() == o.getVersion();
-    }
+	public void setTimestamp(Date timestamp) {
+		this.timestamp = timestamp;
+	}
 
-    @Override
-    public int hashCode() {
-        return Long.valueOf(getVersion()).hashCode();
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) return true;
+		if (!(obj instanceof ToHSchemaVersion)) return false;
+		ToHSchemaVersion o = (ToHSchemaVersion)obj;
+		return getVersion() == o.getVersion();
+	}
 
-    @Override
-    public String toString() {
-        return String.format("%d (%s)", getVersion(), getTimestamp());
-    }
+	@Override
+	public int hashCode() {
+		return Long.valueOf(getVersion()).hashCode();
+	}
+
+	@Override
+	public String toString() {
+		return String.format("%d (%s)", getVersion(), getTimestamp());
+	}
 
 }

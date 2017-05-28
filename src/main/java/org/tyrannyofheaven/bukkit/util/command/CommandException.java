@@ -23,17 +23,17 @@ package org.tyrannyofheaven.bukkit.util.command;
  */
 class CommandException extends RuntimeException {
 
-    private static final long serialVersionUID = -4453503398619490556L;
+	private static final long serialVersionUID = -4453503398619490556L;
 
-    protected CommandException() {
-    }
+	protected CommandException() {
+	}
 
-    public CommandException(String message) {
-        super(message);
-    }
+	public CommandException(String message) {
+		super(message);
+	}
 
-    public CommandException(String format, Object... args) {
-        super(String.format(format, args));
-    }
+	public CommandException(String format, Object... args) {
+		super(String.format(format, args));
+	}
 
 }
