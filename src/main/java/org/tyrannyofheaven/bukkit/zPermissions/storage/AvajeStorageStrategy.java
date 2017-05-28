@@ -76,6 +76,7 @@ public class AvajeStorageStrategy implements StorageStrategy, PreBeginHook, PreC
     private long uuidCacheTimeout = 120L * 60L * 1000L; // Default to 2 hours
 
     public AvajeStorageStrategy(Plugin plugin, int maxRetries, boolean readOnlyMode) {
+        this.plugin = plugin;
         // Following will be used to actually execute async
         executorService = Executors.newSingleThreadExecutor();
 
@@ -86,7 +87,6 @@ public class AvajeStorageStrategy implements StorageStrategy, PreBeginHook, PreC
         // outside the purview of data versioning. data versioning = permissions system only.
         // All reads are uncached. Writes only occur to UUID cache.
         internalTransactionStrategy = new RetryingAvajeTransactionStrategy(plugin.getDatabase(), maxRetries);
-        this.plugin = plugin;
         this.readOnlyMode = readOnlyMode;
     }
 

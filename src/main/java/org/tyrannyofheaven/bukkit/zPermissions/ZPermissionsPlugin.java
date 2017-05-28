@@ -703,7 +703,6 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
         }
     }
 
-    @Override
     public EbeanServer getDatabase() {
         return ebeanServer;
     }
@@ -711,7 +710,6 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
     /* (non-Javadoc)
      * @see org.bukkit.plugin.java.JavaPlugin#getDatabaseClasses()
      */
-    @Override
     public List<Class<?>> getDatabaseClasses() {
         List<Class<?>> result = new ArrayList<>();
         result.add(ToHSchemaVersion.class);
