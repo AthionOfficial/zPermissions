@@ -7,7 +7,6 @@ import java.util.Map;
 
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.file.YamlRepresenter;
-import org.yaml.snakeyaml.Dumper;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.representer.Representer;
@@ -23,11 +22,9 @@ public class AnnotatedYamlConfiguration extends YamlConfiguration {
 
 	private final DumperOptions yamlOptions = new DumperOptions();
 
-	private final Dumper yamlDumper = new Dumper(yamlOptions);
-
 	private final Representer yamlRepresenter = new YamlRepresenter();
 
-	private final Yaml yaml = new Yaml(yamlDumper);
+	private final Yaml yaml = new Yaml(yamlOptions);
 
 	// Map from property key to comment. Comment may have multiple lines that are newline-separated.
 	private final Map<String, String> comments = new HashMap<String, String>();
