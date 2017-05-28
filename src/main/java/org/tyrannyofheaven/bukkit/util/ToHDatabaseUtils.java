@@ -32,7 +32,8 @@ import javax.persistence.PersistenceException;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
+
+import org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsPlugin;
 
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.EbeanServerFactory;
@@ -68,7 +69,7 @@ public class ToHDatabaseUtils {
      * @return new EbeanServer instance
      */
     // R.I.P. BUKKIT-3919
-    public static EbeanServer createEbeanServer(JavaPlugin plugin, ClassLoader classLoader, NamingConvention namingConvention, Configuration config) {
+    public static EbeanServer createEbeanServer(ZPermissionsPlugin plugin, ClassLoader classLoader, NamingConvention namingConvention, Configuration config) {
         if (plugin == null)
             throw new IllegalArgumentException("plugin cannot be null");
         if (classLoader == null)
@@ -122,7 +123,7 @@ public class ToHDatabaseUtils {
     }
 
     // Copied from JavaPlugin
-    private static String replaceDatabaseString(Plugin plugin, String input) {
+    private static String replaceDatabaseString(ZPermissionsPlugin plugin, String input) {
         input = input.replaceAll("\\{DIR\\}", plugin.getDataFolder().getPath().replaceAll("\\\\", "/") + "/");
         input = input.replaceAll("\\{NAME\\}", plugin.getDescription().getName().replaceAll("[^\\w_-]", ""));
         return input;
@@ -160,7 +161,7 @@ public class ToHDatabaseUtils {
      * @param pluginEntity any entity class (aside from ToHSchemaVersion) used by the plugin
      * @param updatePath path to the root of the update scripts
      */
-    public static void upgradeDatabase(JavaPlugin plugin, NamingConvention namingConvention, ClassLoader classLoader, String updatePath) throws IOException {
+    public static void upgradeDatabase(ZPermissionsPlugin plugin, NamingConvention namingConvention, ClassLoader classLoader, String updatePath) throws IOException {
         if (plugin == null)
             throw new IllegalArgumentException("plugin cannot be null");
         if (namingConvention == null)

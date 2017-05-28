@@ -18,7 +18,7 @@ package org.tyrannyofheaven.bukkit.util;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.bukkit.plugin.java.JavaPlugin;
+import org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsPlugin;
 import org.tyrannyofheaven.bukkit.util.ToHStringUtils;
 
 import com.avaje.ebean.config.NamingConvention;
@@ -44,7 +44,7 @@ public class ToHNamingConvention extends UnderscoreNamingConvention {
      * 
      * @param plugin the JavaPlugin subclass
      */
-    public ToHNamingConvention(JavaPlugin plugin, String defaultSchemaTableName) {
+    public ToHNamingConvention(ZPermissionsPlugin plugin, String defaultSchemaTableName) {
         // Set up null placeholders
         for (Class<?> clazz : plugin.getDatabaseClasses()) {
             tableNames.put(clazz.getSimpleName(), null);
