@@ -269,10 +269,10 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
     private boolean regionSupportEnable;
 
     // Track definitions
-    private final Map<String, List<String>> tracks = new LinkedHashMap<>();
+    private final Map<String, List<String>> tracks = new LinkedHashMap<String, List<String>>();
 
     // Names of tracks (in original case)
-    private final Set<String> trackNames = new LinkedHashSet<>();
+    private final Set<String> trackNames = new LinkedHashSet<String>();
 
     // Whether or not to use the database (Avaje) storage strategy
     private boolean databaseSupport;
@@ -680,7 +680,7 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
         if (!regionSupportEnable)
             return; // Don't bother with the rest
 
-        Map<String, RegionStrategy> strategies = new LinkedHashMap<>();
+        Map<String, RegionStrategy> strategies = new LinkedHashMap<String, RegionStrategy>();
         RegionStrategy regionStrategy;
 
         // WorldGuard
@@ -721,7 +721,7 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
      * @see org.bukkit.plugin.java.JavaPlugin#getDatabaseClasses()
      */
     public List<Class<?>> getDatabaseClasses() {
-        List<Class<?>> result = new ArrayList<>();
+        List<Class<?>> result = new ArrayList<Class<?>>();
         result.add(ToHSchemaVersion.class);
         result.add(PermissionEntity.class);
         result.add(Inheritance.class);
@@ -736,7 +736,6 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
     }
 
     // Remove all state associated with a player
-    @Override
     public void removeBukkitPermissions(Player player, boolean recalculate) {
         debug(this, "Removing permissions for %s", player.getName());
         // NB Attachment is recycled along with the player instance
@@ -756,7 +755,6 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
     
     // Update state about a player, resolving effective permissions and
     // creating/updating their attachment
-    @Override
     public void setBukkitPermissions(Player player, Location location, boolean force, RefreshCause eventCause) {
         boolean changed = false;
         try {
@@ -774,7 +772,6 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
                 // Probably safer to do this synchronously
                 final UUID playerUuid = player.getUniqueId();
                 getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
-                    @Override
                     public void run() {
                         Player player = getServer().getPlayer(playerUuid);
                         if (player != null)
@@ -810,7 +807,6 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
             }
             // Fire it off on the following tick
             Bukkit.getScheduler().runTask(this, new Runnable() {
-                @Override
                 public void run() {
                     Player player = Bukkit.getPlayer(playerUuid);
                     if (player != null) {
@@ -861,7 +857,6 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
         // Resolve effective permissions
         final String world = location.getWorld().getName().toLowerCase();
         ResolverResult resolverResult = getRetryingTransactionStrategy().execute(new TransactionCallback<ResolverResult>() {
-            @Override
             public ResolverResult doInTransaction() throws Exception {
 //                fakeFailureChance();
                 return getResolver().resolvePlayer(player.getUniqueId(), world, regions);
@@ -927,7 +922,6 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
      * @param uuid the UUID of the player
      * @param cause the cause of this refresh
      */
-    @Override
     public void refreshPlayer(UUID uuid, RefreshCause cause) {
         Player player = Bukkit.getPlayer(uuid);
         if (player != null) {
@@ -939,10 +933,9 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
     /**
      * Refresh the attachments of all online players.
      */
-    @Override
     public void refreshPlayers() {
         debug(this, "Refreshing all online players");
-        Set<UUID> toRefresh = new HashSet<>();
+        Set<UUID> toRefresh = new HashSet<UUID>();
         for (Player player : Bukkit.getOnlinePlayers()) {
             toRefresh.add(player.getUniqueId());
         }
@@ -954,7 +947,6 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
      * 
      * @param playerUuids collection of players to refresh
      */
-    @Override
     public void refreshPlayers(Collection<UUID> playerUuids) {
         refreshTask.start(playerUuids);
     }
@@ -962,7 +954,6 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
     /**
      * Refresh expiration task.
      */
-    @Override
     public void refreshExpirations() {
         expirationRefreshHandler.rescan();
     }
@@ -972,7 +963,6 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
      * 
      * @param uuid the UUID of the player
      */
-    @Override
     public void refreshExpirations(UUID uuid) {
         if (Bukkit.getPlayer(uuid) != null)
             refreshExpirations();
@@ -983,10 +973,9 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
      * 
      * @param groupName the affected group
      */
-    @Override
     public boolean refreshAffectedPlayers(String groupName) {
         groupName = groupName.toLowerCase();
-        Set<UUID> toRefresh = new HashSet<>();
+        Set<UUID> toRefresh = new HashSet<UUID>();
         for (Player player : Bukkit.getOnlinePlayers()) {
             PlayerState playerState = getPlayerState(player);
             if (playerState == null || playerState.getGroups().contains(groupName)) {
@@ -1009,7 +998,6 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
      * 
      * @return the default track
      */
-    @Override
     public String getDefaultTrack() {
         return defaultTrack;
     }
@@ -1020,7 +1008,6 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
      * @param trackName the name of the track
      * @return a list of groups (in ascending order) associated with the track
      */
-    @Override
     public List<String> getTrack(String trackName) {
         return tracks.get(trackName.toLowerCase());
     }
@@ -1030,9 +1017,8 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
      * 
      * @return names of all tracks
      */
-    @Override
     public List<String> getTracks() {
-        return new ArrayList<>(trackNames);
+        return new ArrayList<String>(trackNames);
     }
 
     /**
@@ -1040,7 +1026,6 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
      * 
      * @return the dump directory
      */
-    @Override
     public File getDumpDirectory() {
         return dumpDirectory;
     }
@@ -1050,7 +1035,6 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
      * 
      * @return the temp permission timeout in seconds
      */
-    @Override
     public int getDefaultTempPermissionTimeout() {
         return defaultTempPermissionTimeout;
     }
@@ -1060,7 +1044,6 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
      * 
      * @return whether to broadcast rank changes to admins
      */
-    @Override
     public boolean isRankAdminBroadcast() {
         return rankAdminBroadcast;
     }
@@ -1070,27 +1053,22 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
      * 
      * @return the default primary group track
      */
-    @Override
     public String getDefaultPrimaryGroupTrack() {
         return defaultPrimaryGroupTrack;
     }
 
-    @Override
     public boolean isVaultPrefixIncludesGroup() {
         return vaultPrefixIncludesGroup;
     }
 
-    @Override
     public boolean isVaultMetadataIncludesGroup() {
         return vaultMetadataIncludesGroup;
     }
 
-    @Override
     public boolean isVaultGroupTestUsesAssignedOnly() {
         return vaultGroupTestUsesAssignedOnly;
     }
 
-    @Override
     public boolean isVaultGetGroupsUsesAssignedOnly() {
         return vaultGetGroupsUsesAssignedOnly;
     }
@@ -1130,7 +1108,7 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
                     getResolver().setGroupPermissionFormats(Collections.singleton((String)strOrList));
             }
             else if (strOrList instanceof List<?>) {
-                Set<String> groupPerms = new HashSet<>();
+                Set<String> groupPerms = new HashSet<String>();
                 for (Object obj : (List<?>)strOrList) {
                     if (obj instanceof String) {
                         groupPerms.add((String)obj);
@@ -1152,7 +1130,7 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
                     getResolver().setAssignedGroupPermissionFormats(Collections.singleton((String)strOrList));
             }
             else if (strOrList instanceof List<?>) {
-                Set<String> groupPerms = new HashSet<>();
+                Set<String> groupPerms = new HashSet<String>();
                 for (Object obj : (List<?>)strOrList) {
                     if (obj instanceof String) {
                         groupPerms.add((String)obj);
@@ -1201,7 +1179,7 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
                     continue;
                 }
 
-                List<String> members = new ArrayList<>();
+                List<String> members = new ArrayList<String>();
                 for (Object o : list) {
                     members.add(o.toString().toLowerCase());
                 }
@@ -1211,7 +1189,7 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
         }
         // Set up default track if none are defined
         if (tracks.isEmpty()) {
-            List<String> members = new ArrayList<>();
+            List<String> members = new ArrayList<String>();
             members.add("default");
             members.add("somegroup");
             members.add("someothergroup");
@@ -1248,7 +1226,7 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
         ToHDatabaseUtils.populateNamingConvention(config, namingConvention);
 
         // Region managers
-        regionManagers = new ArrayList<>();
+        regionManagers = new ArrayList<String>();
         strOrList = config.get("region-managers");
         if (strOrList != null) {
             if (strOrList instanceof String) {
@@ -1307,13 +1285,11 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
     /**
      * Re-read config.yml and refresh attachments of all online players.
      */
-    @Override
     public void reload() {
         config = ToHFileUtils.getConfig(this);
         readConfig();
         startAutoRefreshTask();
         refresh(true, new Runnable() {
-            @Override
             public void run() {
                 invalidateMetadataCache();
                 refreshPlayers();
@@ -1325,7 +1301,6 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
     /**
      * Refresh permissions store
      */
-    @Override
     public void refresh(boolean force, Runnable finishTask) {
         storageStrategy.refresh(force, finishTask);
     }
@@ -1341,11 +1316,9 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
         if (databaseSupport && autoRefreshInterval > 0) {
             final Plugin plugin = this;
             autoRefreshTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
-                @Override
                 public void run() {
                     log(plugin, "Refreshing from database...");
                     refresh(autoRefreshForce, new Runnable() {
-                        @Override
                         public void run() {
                             // This is executed after the storage refresh is done.
                             log(plugin, "Refresh done.");
@@ -1386,7 +1359,7 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
 
         public void setRegions(Set<String> regions) {
             // NB should already be lower-cased
-            this.regions = Collections.unmodifiableSet(new HashSet<>(regions));
+            this.regions = Collections.unmodifiableSet(new HashSet<String>(regions));
         }
 
         public Set<String> getRegions() {
@@ -1408,7 +1381,7 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
         }
 
         public void setGroups(Set<String> groups) {
-            this.groups = new HashSet<>(groups.size());
+            this.groups = new HashSet<String>(groups.size());
             for (String group : groups) {
                 this.groups.add(group.toLowerCase());
             }
@@ -1417,7 +1390,6 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
 
     }
 
-    @Override
     public boolean handleException(CommandSender sender, Command command, String label, String[] args, Throwable t) {
         if (t instanceof ReadOnlyException) {
             sendMessage(sender, colorize("{RED}Server set to read-only mode."));
@@ -1427,17 +1399,14 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
         return false;
     }
 
-    @Override
     public void invalidateMetadataCache(String name, UUID uuid, boolean group) {
         metadataManager.invalidateMetadata(name, uuid, group);
     }
 
-    @Override
     public void invalidateMetadataCache() {
         metadataManager.invalidateAllMetadata();
     }
 
-    @Override
     public void logExternalChange(String message, Object... args) {
         if (logVaultChanges) {
             log(this, message, args);
@@ -1455,24 +1424,20 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
         return searchDelay;
     }
 
-    @Override
     public String getVaultPlayerPrefixFormat() {
         return vaultPlayerPrefixFormat;
     }
 
-    @Override
     public String getVaultPlayerSuffixFormat() {
         return vaultPlayerSuffixFormat;
     }
 
-    @Override
     public void updateDisplayName(final UUID uuid, final String displayName) {
         if (databaseReadOnly) return; // Do nothing if in read-only mode
 
         // Run synchronous since I'm not so sure about thread safety of AvajeStorageStrategy's
         // pre-commit hook...
         Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
-            @Override
             public void run() {
                 getRetryingTransactionStrategy().execute(new TransactionCallbackWithoutResult() {
                     @Override
@@ -1486,12 +1451,10 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
         });
     }
 
-    @Override
     public boolean isServiceMetadataPrefixHack() {
         return serviceMetadataPrefixHack;
     }
 
-    @Override
     public void handleExplicitDefaultGroupMembership(final UUID uuid, final String displayName) {
         if (!explicitDefaultGroupMembership) return; // Keep things implicit
         
