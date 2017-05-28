@@ -1519,7 +1519,7 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
     }
 	
 	public static Server getPluginServer(){
-		return this.pluginServer;
+		return pluginServer;
 	}
 
 }
