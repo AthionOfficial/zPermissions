@@ -90,9 +90,6 @@ public class AsyncTransactionStrategy implements TransactionStrategy {
         catch (Error e){
         	throw e;
         }
-        catch (Error e){
-        	throw e;
-        }
 		catch (Throwable t) {
 			throw new TransactionException(t);
 		}
