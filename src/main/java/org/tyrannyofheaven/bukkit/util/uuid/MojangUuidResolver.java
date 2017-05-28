@@ -61,7 +61,7 @@ public class MojangUuidResolver implements UuidResolver {
 			throw new IllegalArgumentException("username must have a value");
 
 		try {
-			UuidDisplayName udn = cache.get(username.toLowerCase());
+			UuidDisplayName udn = cache.get(username.toLowerCase(), null);
 			return udn != NULL_UDN ? udn : null;
 		}
 		catch (Exception e) {
