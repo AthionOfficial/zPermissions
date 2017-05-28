@@ -43,6 +43,7 @@ import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -1507,5 +1508,9 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
             }
         });
     }
+	
+	public static Server getPluginServer(){
+		return this.getServer();
+	}
 
 }
