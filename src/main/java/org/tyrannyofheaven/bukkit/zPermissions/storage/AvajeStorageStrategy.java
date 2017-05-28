@@ -31,8 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.tyrannyofheaven.bukkit.zPermissions.ZPermissionsPlugin;
 import org.tyrannyofheaven.bukkit.util.transaction.AsyncTransactionStrategy;
 import org.tyrannyofheaven.bukkit.util.transaction.PreBeginHook;
 import org.tyrannyofheaven.bukkit.util.transaction.PreCommitHook;
@@ -66,9 +65,7 @@ public class AvajeStorageStrategy implements StorageStrategy, PreBeginHook, PreC
 
     private final TransactionStrategy internalTransactionStrategy; // NB private and only used here
 
-    private final Plugin plugin;
-
-    private final JavaPlugin jplugin;
+    private final ZPermissionsPlugin plugin;
 
     private final ExecutorService executorService;
 
@@ -78,19 +75,18 @@ public class AvajeStorageStrategy implements StorageStrategy, PreBeginHook, PreC
 
     private long uuidCacheTimeout = 120L * 60L * 1000L; // Default to 2 hours
 
-    public AvajeStorageStrategy(Plugin plugin, int maxRetries, boolean readOnlyMode) {
+    public AvajeStorageStrategy(ZPermissionsPlugin plugin, int maxRetries, boolean readOnlyMode) {
         this.plugin = plugin;
-        this.jplugin = plugin;
         // Following will be used to actually execute async
         executorService = Executors.newSingleThreadExecutor();
 
-        transactionStrategy = new AsyncTransactionStrategy(new RetryingAvajeTransactionStrategy(jplugin.getDatabase(), maxRetries, null, this), executorService, this);
-        permissionDao = new AvajePermissionDao(permissionService, jplugin.getDatabase(), transactionStrategy.getExecutor());
+        transactionStrategy = new AsyncTransactionStrategy(new RetryingAvajeTransactionStrategy(plugin.getDatabase(), maxRetries, null, this), executorService, this);
+        permissionDao = new AvajePermissionDao(permissionService, plugin.getDatabase(), transactionStrategy.getExecutor());
         permissionService.setPermissionDao(permissionDao);
         // NB internalTransactionStrategy has no pre-commit hook since it falls
         // outside the purview of data versioning. data versioning = permissions system only.
         // All reads are uncached. Writes only occur to UUID cache.
-        internalTransactionStrategy = new RetryingAvajeTransactionStrategy(jplugin.getDatabase(), maxRetries);
+        internalTransactionStrategy = new RetryingAvajeTransactionStrategy(plugin.getDatabase(), maxRetries);
         this.readOnlyMode = readOnlyMode;
     }
 
@@ -172,7 +168,7 @@ public class AvajeStorageStrategy implements StorageStrategy, PreBeginHook, PreC
     }
 
     private EbeanServer getEbeanServer() {
-        return jplugin.getDatabase();
+        return plugin.getDatabase();
     }
 
     // Return current data version. Will never return null.
