@@ -48,7 +48,6 @@ import org.tyrannyofheaven.bukkit.zPermissions.model.PermissionEntity;
 import org.tyrannyofheaven.bukkit.zPermissions.model.PermissionRegion;
 import org.tyrannyofheaven.bukkit.zPermissions.model.PermissionWorld;
 import org.tyrannyofheaven.bukkit.zPermissions.util.Utils;
-import org.yaml.snakeyaml.Dumper;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -194,9 +193,8 @@ public class FilePermissionDao implements PermissionDao {
 		// Write out file
 		DumperOptions options = new DumperOptions();
 		options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-		Dumper yamlDumper = new Dumper(options);
 
-		Yaml yaml = new Yaml(yamlDumper);
+		Yaml yaml = new Yaml(options);
 
 
 		Writer out = new FileWriter(newFile);

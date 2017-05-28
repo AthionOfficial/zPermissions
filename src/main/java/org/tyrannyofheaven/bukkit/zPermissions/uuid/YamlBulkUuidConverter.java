@@ -37,7 +37,6 @@ import java.util.Set;
 import org.bukkit.plugin.Plugin;
 import org.tyrannyofheaven.bukkit.util.uuid.UuidDisplayName;
 import org.tyrannyofheaven.bukkit.util.uuid.UuidResolver;
-import org.yaml.snakeyaml.Dumper;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -105,9 +104,8 @@ public class YamlBulkUuidConverter implements BulkUuidConverter {
 		// Write out file
 		DumperOptions options = new DumperOptions();
 		options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-		Dumper yamlDumper = new Dumper(options);
 
-		yaml = new Yaml(yamlDumper);
+		yaml = new Yaml(options);
 
 		Writer out = new FileWriter(newFile);
 		try {
