@@ -100,6 +100,8 @@ public class RetryingAvajeTransactionStrategy implements TransactionStrategy {
 			try {
 				if (getPreBeginHook() != null)
 					getPreBeginHook().preBegin(readOnly);
+				if(ebeanServer.currentTransaction() != null)
+					ebeanServer.endTransaction();
 				getEbeanServer().beginTransaction();
 				try {
 					T result = callback.doInTransaction();
