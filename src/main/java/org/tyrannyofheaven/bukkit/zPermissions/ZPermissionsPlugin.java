@@ -454,13 +454,17 @@ public class ZPermissionsPlugin extends JavaPlugin implements ZPermissionsCore, 
 			storageStrategy.shutdown();
 			storageStrategy = null;
 		}
-
+		
 		// Clear any player state
 
 		// Remove permissions
 		for (Player player : Bukkit.getOnlinePlayers()) {
 			removeBukkitPermissions(player, true);
 		}
+		
+		//remove and remaining naughties
+		if(ebeanServer.currentTransaction() != null)
+			ebeanServer.endTransaction();
 
 		log(this, "%s disabled.", versionInfo.getVersionString());
 	}
